@@ -1,29 +1,29 @@
 ---
 title: OpenAPI Files
-description: Generated OpenAPI documents for the local GMGN stack.
+description: Generated OpenAPI documents used by Mintlify API Reference.
 ---
 
 # OpenAPI Files
 
-These files are generated into the repo and can be imported into Swagger UI, Postman, Insomnia, Stoplight, or other tooling.
+These files drive the `API Reference` tab in Mintlify and can also be imported into Swagger UI, Postman, Insomnia, or other tooling.
 
 ## Files
 
-- `openapi/gmgn-token.openapi.json`
-- `openapi/gmgn-wallet.openapi.json`
-- `openapi/okx-trending.openapi.json`
-- `openapi/padre-trending.openapi.json`
+- `docs/openapi/gmgn-token.openapi.json`
+- `docs/openapi/gmgn-wallet.openapi.json`
+- `docs/openapi/okx-trending.openapi.json`
+- `docs/openapi/padre-trending.openapi.json`
 
 ## Generation
 
-These specs are generated from the crawler app repo and committed here for Mintlify publishing.
+```bash
+npm run docs:openapi:generate
+```
 
 ## Validation
 
-Validate them with:
-
 ```bash
-npx mint openapi-check openapi/gmgn-token.openapi.json
+npm run docs:openapi:check
 ```
 
 ## Notes

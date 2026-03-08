@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "name": "Market Crawler API Suite",
   "theme": "mint",
+  "name": "Market Crawler API Suite",
   "favicon": "/favicon.svg",
   "colors": {
     "primary": "#8BE2AD",
@@ -9,28 +9,59 @@
     "dark": "#21491F"
   },
   "navigation": {
-    "groups": [
+    "tabs": [
       {
-        "group": "Overview",
-        "pages": [
-          "index",
-          "quickstart",
-          "gmgn-terminal",
-          "services"
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Getting Started",
+            "pages": [
+              "index",
+              "quickstart",
+              "services",
+              "gmgn-terminal"
+            ]
+          },
+          {
+            "group": "Models And Research",
+            "pages": [
+              "payload-model",
+              "gmgn-wallet"
+            ]
+          }
         ]
       },
       {
-        "group": "GMGN APIs",
-        "pages": [
-          "gmgn-token",
-          "gmgn-wallet-api",
-          "gmgn-wallet"
-        ]
-      },
-      {
-        "group": "Specs",
-        "pages": [
-          "openapi-files"
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "api-reference/introduction",
+              "gmgn-token",
+              "gmgn-wallet-api",
+              "okx-trending",
+              "padre-trending",
+              "padre-streaming",
+              "openapi-files"
+            ]
+          },
+          {
+            "group": "GMGN Token",
+            "openapi": "openapi/gmgn-token.openapi.json"
+          },
+          {
+            "group": "GMGN Wallet",
+            "openapi": "openapi/gmgn-wallet.openapi.json"
+          },
+          {
+            "group": "OKX Trending",
+            "openapi": "openapi/okx-trending.openapi.json"
+          },
+          {
+            "group": "Padre Trending",
+            "openapi": "openapi/padre-trending.openapi.json"
+          }
         ]
       }
     ]
