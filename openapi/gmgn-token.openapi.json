@@ -1,0 +1,1432 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GMGN Token API",
+    "version": "2.1.0",
+    "description": "Token API grouped by page overview, chart, and individual GMGN token-detail scopes. The local terminal renders Trades, Holders, Top Traders, Liquidity Pool, and Dev Token from section endpoints. DCA, Positions, and Orders remain direct API checks only. Keep /api/gmgn/token only for legacy compatibility."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3002",
+      "description": "Local API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Server health and crawler runtime state"
+    },
+    {
+      "name": "GMGN Token",
+      "description": "Token detail sections grouped by overview, chart, and tab-level data"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Check API server health",
+        "responses": {
+          "200": {
+            "description": "Health payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Legacy aggregated token payload",
+        "description": "Backward-compatible aggregate used by the current local token UI. Prefer section endpoints below for accurate tab scope.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "resolution",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1s",
+                "30s",
+                "1m",
+                "1h",
+                "4h",
+                "1d"
+              ],
+              "default": "1m"
+            }
+          },
+          {
+            "name": "tradesLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 80,
+              "default": 18
+            }
+          },
+          {
+            "name": "holdersLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 80,
+              "default": 30
+            }
+          },
+          {
+            "name": "candlesLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 20,
+              "maximum": 240,
+              "default": 90
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Legacy payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyTokenPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/overview": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Overview/header data",
+        "description": "Page-level token identity, headline KPIs, security, pool, and page badges. These counts are not the same as holders/traders tab counts.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/links": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Header social and external links",
+        "description": "Live token header links crawled from the GMGN token page. Returns `website`, `x`, `github`, and `telegram` when the source page exposes them.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/chart": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Chart candles",
+        "description": "Candles for the GMGN token detail chart.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "resolution",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1s",
+                "30s",
+                "1m",
+                "1h",
+                "4h",
+                "1d"
+              ],
+              "default": "1m"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 20,
+              "maximum": 240,
+              "default": 120
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/trades": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Trades tab base feed",
+        "description": "Base trade tape for the Trades tab. GMGN trade chips are UI state on top of this feed, so counts like `Smart 7` should not be reused for Holders or Top Traders.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 200,
+              "default": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "fetchAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Follow upstream `next` cursors and merge multiple batches into one response."
+          },
+          {
+            "name": "maxPages",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            },
+            "description": "Maximum upstream pages to merge when `fetchAll=true`. If the response still has `data.summary.pagination.has_more=true`, the scan hit this cap."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/holders": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Holders tab",
+        "description": "Holders table and holder summary metrics. `filter` is tab-scoped and maps to upstream tag params like `smart_degen`, `blue_chip`, `bundler`. Counts here can differ from the Trades tab even when the chip label is the same.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 200,
+              "default": 100
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "amount_percentage"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "renowned",
+                "dev",
+                "smart_degen",
+                "blue_chip",
+                "fresh_wallet",
+                "sniper",
+                "rat_trader",
+                "transfer_in",
+                "dex_bot",
+                "bundler"
+              ],
+              "nullable": true
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "fetchAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Follow upstream `next` cursors and merge multiple batches into one response."
+          },
+          {
+            "name": "maxPages",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            },
+            "description": "Maximum upstream pages to merge when `fetchAll=true`. If the response still has `data.summary.pagination.has_more=true`, the scan hit this cap."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/top-traders": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Top Traders tab",
+        "description": "Top traders table and trader summary metrics. `filter` is tab-scoped and differs from Trades chip counts.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 200,
+              "default": 100
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "profit"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "desc"
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "renowned",
+                "dev",
+                "smart_degen",
+                "fresh_wallet",
+                "sniper",
+                "rat_trader",
+                "transfer_in",
+                "dex_bot",
+                "bundler"
+              ],
+              "nullable": true
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "nullable": true
+            }
+          },
+          {
+            "name": "fetchAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Follow upstream `next` cursors and merge multiple batches into one response."
+          },
+          {
+            "name": "maxPages",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            },
+            "description": "Maximum upstream pages to merge when `fetchAll=true`. If the response still has `data.summary.pagination.has_more=true`, the scan hit this cap."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/liquidity": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Liquidity Pool tab",
+        "description": "Liquidity adds/removes plus liquidity summary and trend. `filter` maps to the LP chip row.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 200,
+              "default": 100
+            }
+          },
+          {
+            "name": "filter",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "kol",
+                "dev",
+                "smart",
+                "whale",
+                "fresh",
+                "sniper",
+                "top_holder",
+                "rat_trader",
+                "bot_degen",
+                "bundler"
+              ],
+              "nullable": true
+            }
+          },
+          {
+            "name": "fetchAll",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Follow upstream `next` cursors and merge multiple batches into one response."
+          },
+          {
+            "name": "maxPages",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "default": 12
+            },
+            "description": "Maximum upstream pages to merge when `fetchAll=true`. If the response still has `data.summary.pagination.has_more=true`, the scan hit this cap."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/dca": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "DCA tab",
+        "description": "DCA order feed for the token.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 200,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/orders": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Orders tab",
+        "description": "Hidden, auth-gated order panels. This endpoint remains available for direct API inspection but is no longer rendered in the local token terminal.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          },
+          {
+            "name": "groupTag",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "LimitOrder",
+                "STLimit",
+                "STRdBuy",
+                "STRdSell",
+                "STDevSell",
+                "STBuyDevSell",
+                "STMix",
+                "COPY"
+              ],
+              "default": "LimitOrder"
+            }
+          },
+          {
+            "name": "view",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "history"
+              ],
+              "default": "active"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/positions": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Positions tab",
+        "description": "Session-scoped token positions based on wallets saved in the GMGN session localStorage.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/dev-tokens": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Dev Token tab",
+        "description": "Tokens previously created by the current token creator.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/token/tab-inventory": {
+      "get": {
+        "tags": [
+          "GMGN Token"
+        ],
+        "summary": "Live tab/filter inventory",
+        "description": "Clicks each GMGN token detail tab and captures visible filters, observed chip counts, scope metadata, local endpoint mapping, and backing requests. Use this to keep docs aligned with the live GMGN UI.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+            },
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Section payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler/session unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TokenSectionPayload"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CrawlerStatus": {
+        "type": "object",
+        "required": [
+          "connected",
+          "ready",
+          "pageUrl",
+          "profileDir",
+          "lastPageTitle",
+          "lastSnapshotAt",
+          "lastReconnectAt",
+          "lastError"
+        ],
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "pageUrl": {
+            "type": "string"
+          },
+          "profileDir": {
+            "type": "string"
+          },
+          "lastPageTitle": {
+            "type": "string"
+          },
+          "lastSnapshotAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastReconnectAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "service",
+          "now",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "service": {
+            "type": "string",
+            "example": "gmgn-api"
+          },
+          "now": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "object",
+            "required": [
+              "token",
+              "tokenSections",
+              "wallet"
+            ],
+            "properties": {
+              "token": {
+                "$ref": "#/components/schemas/CrawlerStatus"
+              },
+              "tokenSections": {
+                "$ref": "#/components/schemas/CrawlerStatus"
+              },
+              "wallet": {
+                "$ref": "#/components/schemas/CrawlerStatus"
+              }
+            }
+          }
+        }
+      },
+      "BaseTokenRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string",
+            "example": "sol"
+          },
+          "address": {
+            "type": "string",
+            "example": "HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa"
+          }
+        }
+      },
+      "UpstreamEndpoint": {
+        "type": "object",
+        "required": [
+          "category",
+          "name",
+          "method",
+          "template",
+          "auth",
+          "notes"
+        ],
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "method": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "string"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      },
+      "FilterDescriptor": {
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "active"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "countText": {
+            "type": "string",
+            "nullable": true
+          },
+          "upstreamTag": {
+            "type": "string",
+            "nullable": true
+          },
+          "transport": {
+            "type": "string",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ScopeDescriptor": {
+        "type": "object",
+        "required": [
+          "key",
+          "label",
+          "description"
+        ],
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "SectionTable": {
+        "type": "object",
+        "required": [
+          "rows",
+          "next",
+          "total"
+        ],
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "next": {
+            "type": "string",
+            "nullable": true
+          },
+          "total": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Optional upstream total"
+          }
+        }
+      },
+      "TokenSectionData": {
+        "type": "object",
+        "required": [
+          "section"
+        ],
+        "properties": {
+          "section": {
+            "type": "string"
+          },
+          "scope": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ScopeDescriptor"
+              }
+            ],
+            "nullable": true
+          },
+          "token": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "headline": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "audit": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "pool": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "dev": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "security": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "pageBadges": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "resolution": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Optional limit"
+          },
+          "candles": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "table": {
+            "$ref": "#/components/schemas/SectionTable"
+          },
+          "filters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterDescriptor"
+            }
+          },
+          "views": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FilterDescriptor"
+            }
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "layout": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "sessionScope": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "upstream": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpstreamEndpoint"
+            }
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "TokenSectionPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/BaseTokenRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/TokenSectionData"
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "LegacyTokenPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "error": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

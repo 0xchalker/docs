@@ -1,0 +1,201 @@
+---
+title: GMGN Wallet Endpoints
+description: Browser-validated endpoint map for GMGN wallet pages on Solana and other supported chains.
+---
+
+# GMGN Wallet Endpoints
+
+This page documents the upstream GMGN wallet endpoint inventory recovered from a live browser session.
+
+If you want the normalized local API used by the dashboard, start with [GMGN Wallet API](./gmgn-wallet-api).
+
+Validated in-browser on March 7, 2026 against:
+
+- `https://gmgn.ai/sol/address/2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY`
+- `https://gmgn.ai/sol/address/69z4qTgQ5DBRTJvnQzx2h8jZhNsv5UgADotEwwKUm2JS`
+
+## Runtime Note
+
+GMGN is behind Cloudflare, so these endpoints are most reliable from a solved browser session or a Playwright persistent Chrome profile. The URL templates themselves are reusable for other wallet addresses.
+
+## Wallet Overview
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| Wallet stat | `GET` | `/api/v1/wallet_stat/{chain}/{wallet}/{period}` | Confirmed with `period=1d`, `7d`, `30d`, `all`. Main KPI block. |
+| Wallet common stat | `GET` | `/api/v1/wallet_common_stat/{chain}/{wallet}` | Profile, tag, Twitter, funding source, follow and remark counts. |
+| Wallet stat simple | `GET` | `/api/v1/wallet_stat_simple/{chain}/{wallet}` | Compact array response with `chain`, `address`, `token_num`, `balance`. |
+| Smart money alias | `GET` | `/defi/quotation/v1/smartmoney/{chain}/wallet/{wallet}` | Legacy alias still live. |
+| Smart money alias 2 | `GET` | `/defi/quotation/v1/smartmoney/{chain}/walletNew/{wallet}` | Older alias, still live on March 7, 2026. |
+| Profit stat | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/profit_stat/{period}` | Adds `risk`, fee totals, native balance, average holding period. |
+
+### Sample keys
+
+- `/api/v1/wallet_stat/...` returns keys like `buy_1d`, `sell_7d`, `pnl`, `realized_profit`, `unrealized_profit`, `total_profit`, `sol_balance`, `total_value`, `winrate`
+- `/api/v1/wallet_common_stat/...` returns keys like `avatar`, `name`, `tag`, `twitter_username`, `fund_from_address`, `fund_amount`
+
+## Holdings
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| Holdings list | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/holdings` | Confirmed required query fields include `order_by`. Working default: `order_by=last_active_timestamp&direction=desc&hide_small=false&sellout=true&hide_abnormal=false&limit=50`. Supports `cursor`. |
+| Single holding | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/holding?token_address={token}` | Token-specific detail. |
+| Wallet token info | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/wallet_token_info?token_address={token}` | New token-detail endpoint. |
+| Wallet token info legacy | `GET` | `/api/v1/wallet_token_info/{chain}/{wallet}/{token}` | Older token-detail endpoint still works. |
+| Wallet token trade stat | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/token_trade_stat/{period}?token_address={token}` | Works once `token_address` is passed. |
+| Wallet holding info | `POST` | `/api/v1/wallet_holding_info` | Body: `{ "chain": "sol", "wallets_address": ["..."] }` |
+| Person wallets pnl info | `POST` | `/api/v1/person_wallets_pnl_info` | Body: `{ "chain": "sol", "wallets_address": ["..."], "period": "7d" }` |
+
+### Confirmed holdings defaults
+
+Frontend bundle uses this default query for the new holdings API:
+
+```text
+order_by=last_active_timestamp
+direction=desc
+hide_small=false
+sellout=true
+hide_abnormal=false
+limit=50
+```
+
+### Sample keys
+
+- `/pf/api/v1/wallet/.../holdings` item keys:
+  - `balance`
+  - `usd_value`
+  - `history_bought_amount`
+  - `history_sold_income`
+  - `realized_profit`
+  - `unrealized_profit`
+  - `total_profit`
+  - `start_holding_at`
+  - `last_active_timestamp`
+  - `token`
+  - `wallet_token_tags`
+- `/api/v1/wallet_holding_info` item keys:
+  - `address`
+  - `token_count`
+  - `holding_max_100`
+  - `total_volume`
+- `/api/v1/person_wallets_pnl_info` keys:
+  - `daily_profit`
+  - `token_num`
+  - `token_profit_num`
+  - `win_rate`
+  - `pnl`
+  - `realized_profit`
+  - `unrealized_profit`
+  - `total_profit`
+  - `total_profit_pnl`
+
+## Activity Feed
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| Primary activity feed | `GET` | `/vas/api/v1/wallet_activity/{chain}?address={wallet}&limit={n}` | Confirmed and preferred. Supports `cursor`. |
+| Legacy alias | `GET` | `/api/v1/wallet_activity/{chain}?address={wallet}&limit={n}` | Returned the same payload shape in validation. |
+| Quotation alias | `GET` | `/defi/quotation/v1/wallet_token_activity/{chain}?address={wallet}&limit={n}` | Returned the same payload shape in validation. |
+
+### Accepted wallet query param aliases
+
+The following all worked in validation:
+
+- `address`
+- `wallet_address`
+- `wallet`
+
+### Sample activity keys
+
+- `wallet`
+- `chain`
+- `tx_hash`
+- `timestamp`
+- `event_type`
+- `token`
+- `token_amount`
+- `quote_amount`
+- `cost_usd`
+- `buy_cost_usd`
+- `price_usd`
+- `is_open_or_close`
+- `quote_token`
+- `from_address`
+- `to_address`
+- `gas_native`
+- `gas_usd`
+- `priority_fee`
+- `tip_fee`
+- `launchpad`
+- `launchpad_platform`
+
+## Sharing And Export
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| Share summary | `POST` | `/api/v1/wallets_share_info` | Body: `{ "addresses": ["..."], "period": "7d", "chain": "sol" }` |
+| Share custom range | `POST` | `/api/v1/wallets_share_info_data` | Body: `{ "wallet_info": [{ "wallet": "...", "data": ["YYYY-MM-DD", "YYYY-MM-DD"] }], "chain": "sol" }` |
+
+### Sample keys
+
+- `/api/v1/wallets_share_info`
+  - `realized_profit`
+  - `realized_profit_pnl`
+  - `unrealized_profit`
+  - `unrealized_profit_pnl`
+  - `native_price`
+  - `total_profit`
+  - `total_profit_pnl`
+  - `buy`
+  - `sell`
+- `/api/v1/wallets_share_info_data`
+  - `wallets`
+  - `realized_profit`
+  - `realized_profit_pnl`
+  - `native_price`
+  - `buy`
+  - `sell`
+  - `loss`
+  - `profit`
+
+## Ranking Endpoints
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| PnL ranking | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/pnl_ranking/{period}?type={type}` | Confirmed working with `type=pnl_gt_5x`. |
+| Market-cap ranking | `GET` | `/pf/api/v1/wallet/{chain}/{wallet}/market_cap_ranking/{period}?type={type}` | Live endpoint, but the full `type` enum was not fully recovered. Missing `type` returns `invalid type`. |
+
+## Restricted Endpoints
+
+These are referenced by the frontend bundle, but direct validation without a GMGN access token returned `401 empty token`.
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| TD wallet holding | `GET` | `/td/api/v1/wallets/holding` | Access-token required. |
+| TD wallet holdings | `GET` | `/td/api/v1/wallets/holdings` | Access-token required. |
+| TD wallet balances | `GET` | `/td/api/v1/wallets/balances` | Access-token required. |
+| TD wallet hybrid balances | `POST` | `/td/api/v1/wallets/hybrid/balances` | Access-token required. |
+
+## Bundle-Only Refresh Helpers
+
+These were recovered from the loaded JS bundle and are useful for reverse engineering cache refresh behavior.
+
+| Endpoint | Method | Template | Notes |
+| --- | --- | --- | --- |
+| Wallet stat refresh | `POST` | `/api/v1/wallet_stat_refresh/{chain}/{wallet}?signature={signature}&source={source}` | Frontend refresh helper. |
+| Batch wallet stat refresh | `POST` | `/api/v1/batch_wallet_stat_refresh?signature={md5(chain + wallets.join(''))}` | Batch refresh helper. |
+
+## Workspace Tooling
+
+Use the crawler script added to this workspace:
+
+```bash
+npm run gmgn:wallet:crawl -- 2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY
+```
+
+It writes a JSON file containing:
+
+- endpoint inventory
+- request defaults
+- summarized response shapes
+- raw response payloads for the validated wallet endpoints

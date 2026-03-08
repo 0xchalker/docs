@@ -1,80 +1,87 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Run the local GMGN API, UI terminal, and Mintlify docs together.
 ---
 
-## Get started in three steps
+# Quickstart
 
-Get your documentation site running locally and make your first customization.
+## 1. Start the local GMGN API
 
-### Step 1: Set up your local environment
+```bash
+npm run gmgn:api
+```
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+This serves:
 
-### Step 2: Deploy your changes
+- `GET /health`
+- `GET /openapi.json`
+- `GET /docs`
+- `GET /api/gmgn/token`
+- `GET /api/gmgn/token/*`
+- `GET /api/gmgn/wallet`
+- `GET /api/gmgn/wallet/*`
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+## 2. Start the UI terminal
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+```bash
+npm run gmgn:ui
+```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+Open:
 
-### Step 3: Go live
+- `http://localhost:3001/`
+- `http://localhost:3001/sol/token/{mint}`
+- `http://localhost:3001/sol/address/{wallet}`
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+## 3. Start Mintlify docs
 
-## Next steps
+```bash
+npm run docs:openapi:dev
+```
 
-Now that you have your docs running, explore these key features:
+Open:
 
-<CardGroup cols={2}>
+- `http://localhost:3000/`
 
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
+Note:
 
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
+- `localhost:3000` is reserved for Mintlify docs only
+- the generic `npm run dev` command now uses `localhost:3004` to avoid colliding with docs
 
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
+## 4. Regenerate OpenAPI files
 
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
+```bash
+npm run docs:openapi:generate
+```
 
-</CardGroup>
+## 5. Validate the generated specs
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+```bash
+npm run docs:openapi:check
+```
+
+## Smoke tests
+
+### Token aggregate
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/token?address=HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa&resolution=1m"
+```
+
+### Token holders section
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/token/holders?address=HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa&filter=smart_degen&limit=100"
+```
+
+### Wallet aggregate
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/wallet?address=2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY&period=7d&holdingsLimit=50&activityLimit=40"
+```
+
+### Wallet overall stats
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/wallet/stats?address=2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY&period=7d"
+```

@@ -1,0 +1,76 @@
+---
+title: OKX Trending API
+description: Query Solana-only trending tables from the OKX Web3 token page.
+---
+
+# OKX Trending API
+
+## Base URL
+
+```text
+http://127.0.0.1:3002
+```
+
+## Endpoint
+
+### `GET /api/okx/solana/trending`
+
+Fetches Solana-only trending table data from OKX and returns all requested timeframes in one payload.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `pageSize` | `integer` | `100` | `10..100` upstream page size |
+| `timeframes` | `string` | `5m,1h,4h,24h` | Comma-separated list |
+| `marketCapMin` | `string` | `100000` | Alias: `mcpmi` |
+| `tokenAgeMax` | `string` | `48` | Alias: `tama` |
+| `volumeMin` | `string` | `10000` | Alias: `vmi` |
+| `liquidityMin` | `string` | `5000` | Minimum liquidity |
+| `riskFilter` | `boolean` | `true` | Enable OKX risk filter |
+| `stableTokenFilter` | `boolean` | `true` | Exclude stables |
+| `ttlMs` | `integer` | `8000` | Local cache TTL |
+| `refresh` | `string` | unset | Use `1` to bypass cache |
+
+#### Example
+
+```bash
+curl "http://127.0.0.1:3002/api/okx/solana/trending?timeframes=5m,1h,4h,24h&mcpmi=100000&tama=48&vmi=10000&refresh=1&ttlMs=0"
+```
+
+#### Response shape
+
+Top-level fields:
+
+- `ok`
+- `cachedAt`
+- `cacheAgeMs`
+- `request`
+- `data`
+
+Inside `data`:
+
+- `sourceUrl`
+- `chain`
+- `filters`
+- `categories`
+- `categoryModules`
+- `protocols`
+- `timeframes`
+
+Each `timeframes[5m|1h|4h|24h]` object contains:
+
+- `label`
+- `periodType`
+- `requestParams`
+- `totalPages`
+- `totalRows`
+- `fields`
+- `marketListsFilter`
+- `rows`
+
+`rows` are raw upstream OKX rows so field coverage stays complete even if OKX changes its table payload.
+
+### `GET /health`
+
+Simple service health check for the OKX server.

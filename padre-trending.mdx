@@ -1,0 +1,67 @@
+---
+title: Padre Trending API
+description: Snapshot endpoint for authenticated Padre trending data.
+---
+
+# Padre Trending API
+
+## Base URL
+
+```text
+http://127.0.0.1:3002
+```
+
+## Endpoint
+
+### `GET /api/padre/trending`
+
+Returns a normalized snapshot decoded from Padre WebSocket traffic.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `timeframe` | `string` | `5m` | One of `1m`, `5m`, `30m`, `1h` |
+| `limit` | `integer` | `40` | `10..120` |
+
+#### Example
+
+```bash
+curl "http://127.0.0.1:3002/api/padre/trending?timeframe=5m&limit=40"
+```
+
+#### Response shape
+
+Top-level fields:
+
+- `ok`
+- `fetchedAt`
+- `request`
+- `status`
+- `data`
+
+Inside `data`:
+
+- `timeframe`
+- `totalRows`
+- `rows`
+- `marketSummary`
+
+Each row includes:
+
+- rank and token identity
+- market cap and liquidity
+- holder / visitor / concentration metrics
+- `activity["1m"|"5m"|"30m"|"1h"]`
+- bonding / dex-paid / protocol metadata
+
+### `GET /health`
+
+Returns live crawler state, including:
+
+- websocket connectivity
+- profile directory
+- last frame time
+- last normalized snapshot time
+- last reconnect time
+- last error

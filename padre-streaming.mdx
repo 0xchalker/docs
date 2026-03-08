@@ -1,0 +1,57 @@
+---
+title: Padre Streaming API
+description: Server-Sent Events feed for normalized Padre trending snapshots.
+---
+
+# Padre Streaming API
+
+## Endpoint
+
+### `GET /api/padre/trending/stream`
+
+Opens an SSE stream with two event types:
+
+- `snapshot`
+- `heartbeat`
+
+The stream uses `text/event-stream` and mirrors the same normalized payload shape as `GET /api/padre/trending`.
+
+## Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `timeframe` | `string` | `5m` | One of `1m`, `5m`, `30m`, `1h` |
+| `limit` | `integer` | `40` | `10..120` |
+
+## Example
+
+```bash
+curl -N "http://127.0.0.1:3002/api/padre/trending/stream?timeframe=5m&limit=40"
+```
+
+## Event examples
+
+### Snapshot
+
+```text
+event: snapshot
+data: {"ok":true,"fetchedAt":"2026-03-07T10:00:00.000Z", ...}
+```
+
+### Heartbeat
+
+```text
+event: heartbeat
+data: 1772862000000
+```
+
+## Use cases
+
+- live tables
+- local dashboards
+- SSE relays into frontend polling or event buffers
+
+## Notes
+
+- The backend throttles broadcasts internally instead of emitting every single websocket frame.
+- Consumers should reconnect if the connection closes or stops receiving `heartbeat` events.

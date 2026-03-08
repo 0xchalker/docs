@@ -1,0 +1,528 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Padre Trending API",
+    "version": "1.0.0",
+    "description": "Authenticated realtime trending snapshots decoded from Padre WebSocket traffic, exposed as polling and SSE endpoints."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3002",
+      "description": "Local API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Health and crawler runtime status"
+    },
+    {
+      "name": "Padre",
+      "description": "Trending snapshots and live stream"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Check Padre crawler health",
+        "responses": {
+          "200": {
+            "description": "Service health",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "service": {
+                      "type": "string",
+                      "example": "padre-trending-api"
+                    },
+                    "now": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/PadreCrawlerStatus"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "service",
+                    "now",
+                    "status"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/padre/trending": {
+      "get": {
+        "tags": [
+          "Padre"
+        ],
+        "summary": "Fetch a Padre trending snapshot",
+        "parameters": [
+          {
+            "name": "timeframe",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1m",
+                "5m",
+                "30m",
+                "1h"
+              ],
+              "default": "5m"
+            },
+            "description": "Trending ranking window"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 120,
+              "default": 40
+            },
+            "description": "Maximum rows returned"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trending snapshot",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PadreTrendingResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler not ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PadreTrendingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/padre/trending/stream": {
+      "get": {
+        "tags": [
+          "Padre"
+        ],
+        "summary": "Open an SSE stream of Padre snapshots",
+        "description": "Streams `snapshot` events and periodic `heartbeat` events using `text/event-stream`.",
+        "parameters": [
+          {
+            "name": "timeframe",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1m",
+                "5m",
+                "30m",
+                "1h"
+              ],
+              "default": "5m"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 10,
+              "maximum": 120,
+              "default": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string",
+                  "example": "event: snapshot\\ndata: {\\\"ok\\\":true,...}\\n\\nevent: heartbeat\\ndata: 1772862000000\\n\\n"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PadreCrawlerStatus": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "pageUrl": {
+            "type": "string"
+          },
+          "profileDir": {
+            "type": "string"
+          },
+          "lastFrameAt": {
+            "type": "string",
+            "description": "Last websocket frame time",
+            "nullable": true
+          },
+          "lastSnapshotAt": {
+            "type": "string",
+            "description": "Last normalized snapshot time",
+            "nullable": true
+          },
+          "lastReconnectAt": {
+            "type": "string",
+            "description": "Last reconnect time",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "description": "Last crawler error",
+            "nullable": true
+          },
+          "totalRows": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Tracked rows"
+          }
+        },
+        "required": [
+          "connected",
+          "ready",
+          "pageUrl",
+          "profileDir",
+          "lastFrameAt",
+          "lastSnapshotAt",
+          "lastReconnectAt",
+          "lastError",
+          "totalRows"
+        ]
+      },
+      "PadreActivityStats": {
+        "type": "object",
+        "properties": {
+          "buys": {
+            "type": "number",
+            "description": "Buy count"
+          },
+          "sells": {
+            "type": "number",
+            "description": "Sell count"
+          },
+          "volUsd": {
+            "type": "number",
+            "description": "Volume in USD"
+          },
+          "deltaPct": {
+            "type": "number",
+            "description": "Percentage change"
+          }
+        },
+        "required": [
+          "buys",
+          "sells",
+          "volUsd",
+          "deltaPct"
+        ]
+      },
+      "PadreTrendingRow": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Sorted rank"
+          },
+          "tokenAddress": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Token avatar",
+            "nullable": true
+          },
+          "launchpad": {
+            "type": "string",
+            "description": "Launchpad type",
+            "nullable": true
+          },
+          "protocol": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Token creation time in ms",
+            "nullable": true
+          },
+          "listedAt": {
+            "type": "integer",
+            "format": "int64",
+            "description": "DEX listing time in ms",
+            "nullable": true
+          },
+          "dexPaidAt": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Dex paid timestamp in ms",
+            "nullable": true
+          },
+          "isDexPaid": {
+            "type": "boolean"
+          },
+          "isBonded": {
+            "type": "boolean"
+          },
+          "marketCapUsd": {
+            "type": "number",
+            "description": "Market cap",
+            "nullable": true
+          },
+          "liquidityUsd": {
+            "type": "number",
+            "description": "Liquidity",
+            "nullable": true
+          },
+          "totalVolumeUsd": {
+            "type": "number",
+            "description": "Lifetime volume",
+            "nullable": true
+          },
+          "m5VolumeUsd": {
+            "type": "number",
+            "description": "5m volume",
+            "nullable": true
+          },
+          "totalTxns": {
+            "type": "number",
+            "description": "Total transactions",
+            "nullable": true
+          },
+          "totalHolders": {
+            "type": "number",
+            "description": "Holder count",
+            "nullable": true
+          },
+          "proHolders": {
+            "type": "number",
+            "description": "Pro holder count",
+            "nullable": true
+          },
+          "recentVisitors": {
+            "type": "number",
+            "description": "Recent visitors",
+            "nullable": true
+          },
+          "curveProgress": {
+            "type": "number",
+            "description": "Bonding curve progress",
+            "nullable": true
+          },
+          "totalSolFees": {
+            "type": "number",
+            "description": "SOL fees",
+            "nullable": true
+          },
+          "top10HoldingPct": {
+            "type": "number",
+            "description": "Top 10 concentration",
+            "nullable": true
+          },
+          "insiderHoldingPct": {
+            "type": "number",
+            "description": "Insider concentration",
+            "nullable": true
+          },
+          "sniperHoldingPct": {
+            "type": "number",
+            "description": "Sniper concentration",
+            "nullable": true
+          },
+          "devHoldingPct": {
+            "type": "number",
+            "description": "Dev concentration",
+            "nullable": true
+          },
+          "bundleHoldingPct": {
+            "type": "number",
+            "description": "Bundler concentration",
+            "nullable": true
+          },
+          "activity": {
+            "type": "object",
+            "properties": {
+              "1m": {
+                "$ref": "#/components/schemas/PadreActivityStats"
+              },
+              "5m": {
+                "$ref": "#/components/schemas/PadreActivityStats"
+              },
+              "30m": {
+                "$ref": "#/components/schemas/PadreActivityStats"
+              },
+              "1h": {
+                "$ref": "#/components/schemas/PadreActivityStats"
+              }
+            },
+            "required": [
+              "1m",
+              "5m",
+              "30m",
+              "1h"
+            ]
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "rank",
+          "tokenAddress",
+          "symbol",
+          "name",
+          "avatarUrl",
+          "launchpad",
+          "protocol",
+          "createdAt",
+          "listedAt",
+          "dexPaidAt",
+          "isDexPaid",
+          "isBonded",
+          "marketCapUsd",
+          "liquidityUsd",
+          "totalVolumeUsd",
+          "m5VolumeUsd",
+          "totalTxns",
+          "totalHolders",
+          "proHolders",
+          "recentVisitors",
+          "curveProgress",
+          "totalSolFees",
+          "top10HoldingPct",
+          "insiderHoldingPct",
+          "sniperHoldingPct",
+          "devHoldingPct",
+          "bundleHoldingPct",
+          "activity",
+          "updatedAt"
+        ]
+      },
+      "PadreTrendingResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "properties": {
+              "timeframe": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "30m",
+                  "1h"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Maximum row count"
+              }
+            },
+            "required": [
+              "timeframe",
+              "limit"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/PadreCrawlerStatus"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "timeframe": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "30m",
+                  "1h"
+                ]
+              },
+              "totalRows": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Total rows tracked"
+              },
+              "rows": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/PadreTrendingRow"
+                }
+              },
+              "marketSummary": {
+                "type": "object",
+                "nullable": true,
+                "additionalProperties": true
+              }
+            },
+            "required": [
+              "timeframe",
+              "totalRows",
+              "rows",
+              "marketSummary"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ]
+      }
+    }
+  }
+}

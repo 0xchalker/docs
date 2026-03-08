@@ -1,0 +1,1789 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "GMGN Wallet API",
+    "version": "1.0.0",
+    "description": "Normalized GMGN wallet endpoints backed by a browser-aware wallet crawler. The public surface is organized by wallet page sections: profile, stats, holdings, activity, and rankings."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3002",
+      "description": "Local API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Server health and crawler runtime status"
+    },
+    {
+      "name": "GMGN Wallet",
+      "description": "Normalized GMGN wallet data grouped by logical wallet page sections"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "System"
+        ],
+        "summary": "Check API server health",
+        "responses": {
+          "200": {
+            "description": "Server health payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch the compatibility aggregate wallet payload",
+        "description": "Composed wallet response bundling profile, stats, holdings, activity, and rankings.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "default": "7d"
+            }
+          },
+          {
+            "name": "holdingsLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 80,
+              "default": 50
+            }
+          },
+          {
+            "name": "activityLimit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 120,
+              "default": 40
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Composed wallet payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/profile": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch wallet identity and social profile",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "default": "7d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet profile payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletProfilePayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/stats": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch wallet overall stats",
+        "description": "Canonical summary endpoint for total wallet metrics such as value, PnL, win rate, token counts, fees, volume, and PnL bucket breakdowns.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "default": "7d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet stats payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletStatsPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/holdings": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch normalized GMGN wallet holdings",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 80,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "last_active_timestamp"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "desc"
+            }
+          },
+          {
+            "name": "hideSmall",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "sellout",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "hideAbnormal",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Holdings payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletHoldingsPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/activity": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch normalized GMGN wallet activity feed",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "nullable": true
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 120,
+              "default": 40
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletActivityPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/rankings": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch wallet ranking sections",
+        "description": "Returns recovered ranking blocks such as pnl_gt_5x. Market-cap ranking stays nullable until the upstream type enum is fully recovered.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "default": "7d"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Wallet rankings payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletRankingsPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CrawlerStatus": {
+        "type": "object",
+        "required": [
+          "connected",
+          "ready",
+          "pageUrl",
+          "profileDir",
+          "lastPageTitle",
+          "lastSnapshotAt",
+          "lastReconnectAt",
+          "lastError"
+        ],
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "pageUrl": {
+            "type": "string"
+          },
+          "profileDir": {
+            "type": "string"
+          },
+          "lastPageTitle": {
+            "type": "string"
+          },
+          "lastSnapshotAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastReconnectAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "service",
+          "now",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "service": {
+            "type": "string",
+            "example": "gmgn-api"
+          },
+          "now": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          }
+        }
+      },
+      "GmgnWalletSectionRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address",
+          "period"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string",
+            "example": "sol"
+          },
+          "address": {
+            "type": "string",
+            "example": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "1d",
+              "7d",
+              "30d",
+              "all"
+            ]
+          }
+        }
+      },
+      "GmgnWalletRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address",
+          "period",
+          "holdingsLimit",
+          "activityLimit"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string",
+            "example": "sol"
+          },
+          "address": {
+            "type": "string",
+            "example": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "1d",
+              "7d",
+              "30d",
+              "all"
+            ]
+          },
+          "holdingsLimit": {
+            "type": "integer"
+          },
+          "activityLimit": {
+            "type": "integer"
+          }
+        }
+      },
+      "GmgnWalletHoldingsRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address",
+          "limit",
+          "cursor",
+          "orderBy",
+          "direction",
+          "hideSmall",
+          "sellout",
+          "hideAbnormal"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "cursor": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderBy": {
+            "type": "string"
+          },
+          "direction": {
+            "type": "string"
+          },
+          "hideSmall": {
+            "type": "boolean"
+          },
+          "sellout": {
+            "type": "boolean"
+          },
+          "hideAbnormal": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GmgnWalletActivityRequest": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address",
+          "period",
+          "limit",
+          "cursor"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "period": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit": {
+            "type": "integer"
+          },
+          "cursor": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "GmgnWalletProfile": {
+        "type": "object",
+        "required": [
+          "address",
+          "addressLabel",
+          "name",
+          "displayName",
+          "avatarUrl",
+          "ens",
+          "tag",
+          "tags",
+          "twitterName",
+          "twitterUsername",
+          "twitterDescription",
+          "twitterFans",
+          "followersCount",
+          "followCount",
+          "remarkCount",
+          "createdTokenCount",
+          "fundFrom",
+          "fundFromAddress",
+          "fundAmount",
+          "fundTxHash",
+          "fundFromAt",
+          "isBlueVerified",
+          "isTwitterBound"
+        ],
+        "properties": {
+          "address": {
+            "type": "string"
+          },
+          "addressLabel": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string"
+          },
+          "ens": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "twitterName": {
+            "type": "string"
+          },
+          "twitterUsername": {
+            "type": "string"
+          },
+          "twitterDescription": {
+            "type": "string"
+          },
+          "twitterFans": {
+            "type": "number",
+            "nullable": true,
+            "description": "Twitter fan count"
+          },
+          "followersCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Follower count"
+          },
+          "followCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Following count"
+          },
+          "remarkCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Remark count"
+          },
+          "createdTokenCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Created token count"
+          },
+          "fundFrom": {
+            "type": "string"
+          },
+          "fundFromAddress": {
+            "type": "string"
+          },
+          "fundAmount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Funding amount"
+          },
+          "fundTxHash": {
+            "type": "string"
+          },
+          "fundFromAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Funding timestamp in milliseconds"
+          },
+          "isBlueVerified": {
+            "type": "boolean"
+          },
+          "isTwitterBound": {
+            "type": "boolean"
+          }
+        }
+      },
+      "GmgnWalletPnlBreakdown": {
+        "type": "object",
+        "required": [
+          "winRate",
+          "tokenCount",
+          "profitTokenCount",
+          "pnlLtMinusHalfCount",
+          "pnlMinusHalfToZeroCount",
+          "pnlZeroTo2xCount",
+          "pnl2xTo5xCount",
+          "pnlGt5xCount",
+          "firstMarketCapBucket",
+          "secondMarketCapBucket",
+          "thirdMarketCapBucket"
+        ],
+        "properties": {
+          "winRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Win rate percentage"
+          },
+          "tokenCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Token count"
+          },
+          "profitTokenCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Profit token count"
+          },
+          "pnlLtMinusHalfCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "PnL below -50% bucket count"
+          },
+          "pnlMinusHalfToZeroCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "PnL between -50% and 0% bucket count"
+          },
+          "pnlZeroTo2xCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "PnL between 0% and 200% bucket count"
+          },
+          "pnl2xTo5xCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "PnL between 200% and 500% bucket count"
+          },
+          "pnlGt5xCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "PnL above 500% bucket count"
+          },
+          "firstMarketCapBucket": {
+            "type": "number",
+            "nullable": true,
+            "description": "First market-cap bucket count"
+          },
+          "secondMarketCapBucket": {
+            "type": "number",
+            "nullable": true,
+            "description": "Second market-cap bucket count"
+          },
+          "thirdMarketCapBucket": {
+            "type": "number",
+            "nullable": true,
+            "description": "Third market-cap bucket count"
+          }
+        }
+      },
+      "GmgnWalletStats": {
+        "type": "object",
+        "required": [
+          "chain",
+          "address",
+          "addressLabel",
+          "balanceNative",
+          "totalValueUsd",
+          "totalVolumeUsd",
+          "realizedProfitUsd",
+          "realizedProfitPnl",
+          "unrealizedProfitUsd",
+          "unrealizedProfitPnl",
+          "totalProfitUsd",
+          "totalProfitPnl",
+          "winRate",
+          "tokenCount",
+          "profitTokenCount",
+          "followCount",
+          "remarkCount",
+          "lastActiveAt",
+          "fundFrom",
+          "fundFromAddress",
+          "fundFromAt",
+          "fundAmount",
+          "totalBuys",
+          "totalSells",
+          "totalBoughtCostUsd",
+          "totalSoldIncomeUsd",
+          "totalFeeNative",
+          "totalFeeUsd",
+          "avgHoldingPeriodSeconds",
+          "tags",
+          "pnlBreakdown"
+        ],
+        "properties": {
+          "chain": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "addressLabel": {
+            "type": "string"
+          },
+          "balanceNative": {
+            "type": "number",
+            "nullable": true,
+            "description": "Native token balance"
+          },
+          "totalValueUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total value in USD"
+          },
+          "totalVolumeUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total volume in USD"
+          },
+          "realizedProfitUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Realized profit in USD"
+          },
+          "realizedProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Realized profit percentage"
+          },
+          "unrealizedProfitUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Unrealized profit in USD"
+          },
+          "unrealizedProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Unrealized profit percentage"
+          },
+          "totalProfitUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total profit in USD"
+          },
+          "totalProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total profit percentage"
+          },
+          "winRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Win rate percentage"
+          },
+          "tokenCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Token count"
+          },
+          "profitTokenCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Profit token count"
+          },
+          "followCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Follow count"
+          },
+          "remarkCount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Remark count"
+          },
+          "lastActiveAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Last activity timestamp in milliseconds"
+          },
+          "fundFrom": {
+            "type": "string"
+          },
+          "fundFromAddress": {
+            "type": "string"
+          },
+          "fundFromAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Funding timestamp in milliseconds"
+          },
+          "fundAmount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Funding amount"
+          },
+          "totalBuys": {
+            "type": "number",
+            "nullable": true,
+            "description": "Buy count"
+          },
+          "totalSells": {
+            "type": "number",
+            "nullable": true,
+            "description": "Sell count"
+          },
+          "totalBoughtCostUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total bought cost in USD"
+          },
+          "totalSoldIncomeUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total sold income in USD"
+          },
+          "totalFeeNative": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total fee in native"
+          },
+          "totalFeeUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total fee in USD"
+          },
+          "avgHoldingPeriodSeconds": {
+            "type": "number",
+            "nullable": true,
+            "description": "Average holding period in seconds"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pnlBreakdown": {
+            "$ref": "#/components/schemas/GmgnWalletPnlBreakdown"
+          }
+        }
+      },
+      "GmgnWalletRankingItem": {
+        "type": "object",
+        "required": [
+          "tokenAddress",
+          "symbol",
+          "name",
+          "logoUrl",
+          "profitRatio",
+          "totalProfit",
+          "totalProfitPnl"
+        ],
+        "properties": {
+          "tokenAddress": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "profitRatio": {
+            "type": "number",
+            "nullable": true,
+            "description": "Profit ratio percentage"
+          },
+          "totalProfit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total profit in USD"
+          },
+          "totalProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total profit percentage"
+          }
+        }
+      },
+      "GmgnWalletRankings": {
+        "type": "object",
+        "required": [
+          "pnlGt5x",
+          "marketCap"
+        ],
+        "properties": {
+          "pnlGt5x": {
+            "type": "object",
+            "required": [
+              "type",
+              "profitRatio",
+              "total",
+              "items"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "example": "pnl_gt_5x"
+              },
+              "profitRatio": {
+                "type": "number",
+                "nullable": true,
+                "description": "Ranking profit ratio percentage"
+              },
+              "total": {
+                "type": "number",
+                "nullable": true,
+                "description": "Ranking total"
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletRankingItem"
+                }
+              }
+            }
+          },
+          "marketCap": {
+            "type": "object",
+            "nullable": true,
+            "additionalProperties": true
+          }
+        }
+      },
+      "GmgnWalletHolding": {
+        "type": "object",
+        "required": [
+          "tokenAddress",
+          "symbol",
+          "name",
+          "logoUrl",
+          "launchpad",
+          "launchpadPlatform",
+          "decimals",
+          "priceUsd",
+          "liquidityUsd",
+          "totalSupply",
+          "maxSupply",
+          "creationTimestamp",
+          "openTimestamp",
+          "balance",
+          "usdValue",
+          "realizedProfit",
+          "realizedProfitPnl",
+          "unrealizedProfit",
+          "unrealizedProfitPnl",
+          "totalProfit",
+          "totalProfitPnl",
+          "lastActiveAt",
+          "walletTokenTags"
+        ],
+        "properties": {
+          "tokenAddress": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "logoUrl": {
+            "type": "string"
+          },
+          "launchpad": {
+            "type": "string"
+          },
+          "launchpadPlatform": {
+            "type": "string"
+          },
+          "decimals": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "Token decimals"
+          },
+          "priceUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Token price in USD"
+          },
+          "liquidityUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Liquidity in USD"
+          },
+          "totalSupply": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total supply"
+          },
+          "maxSupply": {
+            "type": "number",
+            "nullable": true,
+            "description": "Max supply"
+          },
+          "creationTimestamp": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Token creation timestamp in milliseconds"
+          },
+          "openTimestamp": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Token open timestamp in milliseconds"
+          },
+          "balance": {
+            "type": "number",
+            "nullable": true,
+            "description": "Token balance"
+          },
+          "usdValue": {
+            "type": "number",
+            "nullable": true,
+            "description": "Holding value in USD"
+          },
+          "realizedProfit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Realized profit in USD"
+          },
+          "realizedProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Realized profit percentage"
+          },
+          "unrealizedProfit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Unrealized profit in USD"
+          },
+          "unrealizedProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Unrealized profit percentage"
+          },
+          "totalProfit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total profit in USD"
+          },
+          "totalProfitPnl": {
+            "type": "number",
+            "nullable": true,
+            "description": "Total profit percentage"
+          },
+          "lastActiveAt": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Last activity timestamp in milliseconds"
+          },
+          "walletTokenTags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "GmgnWalletActivityItem": {
+        "type": "object",
+        "required": [
+          "txHash",
+          "timestamp",
+          "eventType",
+          "tokenAddress",
+          "tokenSymbol",
+          "tokenLogoUrl",
+          "tokenSupply",
+          "tokenAmount",
+          "quoteAmount",
+          "costUsd",
+          "buyCostUsd",
+          "priceUsd",
+          "priceNative",
+          "isOpenOrClose",
+          "quoteTokenSymbol",
+          "quoteTokenAddress",
+          "fromAddress",
+          "toAddress",
+          "gasNative",
+          "gasUsd",
+          "dexNative",
+          "dexUsd",
+          "priorityFee",
+          "tipFee",
+          "launchpad",
+          "launchpadPlatform"
+        ],
+        "properties": {
+          "txHash": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Activity timestamp in milliseconds"
+          },
+          "eventType": {
+            "type": "string"
+          },
+          "tokenAddress": {
+            "type": "string"
+          },
+          "tokenSymbol": {
+            "type": "string"
+          },
+          "tokenLogoUrl": {
+            "type": "string"
+          },
+          "tokenSupply": {
+            "type": "number",
+            "nullable": true,
+            "description": "Token supply"
+          },
+          "tokenAmount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Token amount"
+          },
+          "quoteAmount": {
+            "type": "number",
+            "nullable": true,
+            "description": "Quote amount"
+          },
+          "costUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Cost in USD"
+          },
+          "buyCostUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Buy cost in USD"
+          },
+          "priceUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Price in USD"
+          },
+          "priceNative": {
+            "type": "number",
+            "nullable": true,
+            "description": "Price in quote token"
+          },
+          "isOpenOrClose": {
+            "type": "integer",
+            "format": "int64",
+            "nullable": true,
+            "description": "Open or close marker"
+          },
+          "quoteTokenSymbol": {
+            "type": "string"
+          },
+          "quoteTokenAddress": {
+            "type": "string"
+          },
+          "fromAddress": {
+            "type": "string"
+          },
+          "toAddress": {
+            "type": "string"
+          },
+          "gasNative": {
+            "type": "number",
+            "nullable": true,
+            "description": "Gas in native token"
+          },
+          "gasUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "Gas in USD"
+          },
+          "dexNative": {
+            "type": "number",
+            "nullable": true,
+            "description": "DEX fee in native token"
+          },
+          "dexUsd": {
+            "type": "number",
+            "nullable": true,
+            "description": "DEX fee in USD"
+          },
+          "priorityFee": {
+            "type": "number",
+            "nullable": true,
+            "description": "Priority fee"
+          },
+          "tipFee": {
+            "type": "number",
+            "nullable": true,
+            "description": "Tip fee"
+          },
+          "launchpad": {
+            "type": "string"
+          },
+          "launchpadPlatform": {
+            "type": "string"
+          }
+        }
+      },
+      "GmgnWalletPayloadData": {
+        "type": "object",
+        "required": [
+          "profile",
+          "stats",
+          "holdings",
+          "activity",
+          "rankings",
+          "endpointInventory"
+        ],
+        "properties": {
+          "profile": {
+            "$ref": "#/components/schemas/GmgnWalletProfile"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/GmgnWalletStats"
+          },
+          "holdings": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "firstTokenAddress",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletHoldingsRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "firstTokenAddress": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletHolding"
+                }
+              }
+            }
+          },
+          "activity": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletActivityRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletActivityItem"
+                }
+              }
+            }
+          },
+          "rankings": {
+            "$ref": "#/components/schemas/GmgnWalletRankings"
+          },
+          "endpointInventory": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        }
+      },
+      "GmgnWalletPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GmgnWalletPayloadData"
+          }
+        }
+      },
+      "GmgnWalletProfilePayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletSectionRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GmgnWalletProfile"
+          }
+        }
+      },
+      "GmgnWalletStatsPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletSectionRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GmgnWalletStats"
+          }
+        }
+      },
+      "GmgnWalletRankingsPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletSectionRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "$ref": "#/components/schemas/GmgnWalletRankings"
+          }
+        }
+      },
+      "GmgnWalletHoldingsPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletHoldingsRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "firstTokenAddress",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletHoldingsRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "firstTokenAddress": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletHolding"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GmgnWalletActivityPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletActivityRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletActivityRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletActivityItem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GmgnWalletErrorResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "error"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": false
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

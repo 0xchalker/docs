@@ -1,0 +1,175 @@
+---
+title: GMGN Token API
+description: Logical endpoint map for the local GMGN token API and token terminal tabs.
+---
+
+# GMGN Token API
+
+## Base URL
+
+```text
+http://127.0.0.1:3002
+```
+
+## Core rule
+
+Do not mix counts across tabs.
+
+Examples observed on live GMGN:
+
+- `Trades > Smart 7`
+- `Holders > Smart 5`
+- `Top Traders > Smart 5`
+
+The label is similar, but the scope is different. The local API is now grouped so each visible table has its own endpoint.
+
+## Local endpoint groups
+
+### Compatibility
+
+- `GET /api/gmgn/token`
+
+This remains for header, chart, and backward compatibility. It is not the best endpoint for explaining tab-specific counts.
+
+### Page-level
+
+- `GET /api/gmgn/token/overview`
+- `GET /api/gmgn/token/links`
+- `GET /api/gmgn/token/chart`
+
+Use these for:
+
+- token header desk
+- crawled social links from the live GMGN token header
+- KPI ribbon
+- chart candles
+- security and pool context
+
+`/api/gmgn/token/links` is the clean header-links endpoint. Use it when you only need `website`, `x`, `github`, or `telegram` without pulling the full aggregate token payload.
+
+### Visible token terminal tabs
+
+| Local terminal tab | Local endpoint | Notes |
+| --- | --- | --- |
+| Trades | `/api/gmgn/token/trades` | base trade tape |
+| Holders | `/api/gmgn/token/holders` | holder table and holder summary |
+| Top Traders | `/api/gmgn/token/top-traders` | profit-ranked trader table |
+| Liquidity Pool | `/api/gmgn/token/liquidity` | LP actions plus LP stats |
+| Dev Token | `/api/gmgn/token/dev-tokens` | creator history |
+
+### API-only token endpoints
+
+These are still exposed, but they are no longer rendered as tabs in the local token UI:
+
+- `GET /api/gmgn/token/dca`
+- `GET /api/gmgn/token/positions`
+- `GET /api/gmgn/token/orders`
+
+## Filter behavior
+
+### Trades
+
+`Trades` chips are clickable in the local terminal, but they are client-side filters on top of the base trade feed.
+
+Use:
+
+- `GET /api/gmgn/token/trades`
+
+Recommended:
+
+- `fetchAll=true`
+- `maxPages=12`
+
+Do not assume there is a stable upstream network request per trade chip click.
+
+### Holders
+
+`Holders` chips map to real upstream filters.
+
+The local API accepts:
+
+- `filter`
+- `cursor`
+- `fetchAll`
+- `maxPages`
+
+The visible chip row only keeps the holder-scope filters that behave like a true table filter.
+
+Common examples:
+
+- `renowned`
+- `dev`
+- `smart_degen`
+- `blue_chip`
+- `fresh_wallet`
+- `sniper`
+- `rat_trader`
+- `dex_bot`
+- `bundler`
+
+Example:
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/token/holders?address=HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa&filter=smart_degen&limit=200&fetchAll=true&maxPages=12"
+```
+
+### Top Traders
+
+`Top Traders` also maps to real upstream filters, but the table scope is different from `Holders`.
+
+The local API also accepts `cursor`, `fetchAll`, and `maxPages` here.
+
+Example:
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/token/top-traders?address=HmKhuB9CDoHhg829K8KGxfUSy1sP3pAttswi9JG1DKJa&filter=smart_degen&limit=200&fetchAll=true&maxPages=12"
+```
+
+### Liquidity Pool
+
+`Liquidity Pool` has its own LP actor filters and should not be explained using `Trades` or `Holders`.
+
+This endpoint also accepts `fetchAll` and `maxPages` so the local UI can paginate over the merged row set instead of only the first upstream batch.
+
+### Orders
+
+`Orders` remains available only for direct API checks.
+
+It uses:
+
+- `groupTag`
+- `view`
+
+It is session-gated and depends on a solved GMGN browser session.
+
+## Pagination model
+
+The local token terminal now uses two layers:
+
+1. Upstream batch merge:
+   `fetchAll=true&maxPages=12` follows GMGN `next` cursors and merges multiple upstream batches.
+2. Local UI pagination:
+   Once rows are merged, the terminal paginates that merged row set locally.
+
+Read `data.summary.pagination` in section responses to understand whether the scan is complete or capped:
+
+- `mode`
+- `fetched_pages`
+- `fetched_rows`
+- `max_pages`
+- `has_more`
+- `next_cursor`
+
+## Recommended usage
+
+1. Use `/api/gmgn/token` for the compatibility aggregate.
+2. Use `/api/gmgn/token/overview` and `/api/gmgn/token/chart` for page-level components.
+3. Use the section endpoint that matches the visible table tab.
+4. For tables, prefer `limit=200&fetchAll=true&maxPages=12`.
+5. If counts do not match between tabs, assume the scopes differ.
+
+## Related docs
+
+- [GMGN Terminal](./gmgn-terminal)
+- [GMGN Wallet API](./gmgn-wallet-api)
+- [OpenAPI Files](./openapi-files)

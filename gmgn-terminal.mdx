@@ -1,0 +1,94 @@
+---
+title: GMGN Terminal
+description: Local route map and UI behavior for the GMGN trading terminal.
+---
+
+# GMGN Terminal
+
+## Local routes
+
+- `http://localhost:3000/` for Mintlify docs
+- `http://localhost:3001/`
+- `http://localhost:3001/sol/token/{mint}`
+- `http://localhost:3001/sol/address/{wallet}`
+
+## Header design
+
+The shell is now intentionally reduced to:
+
+- `Discover`
+- `Token`
+- `Wallet`
+- one search field
+- `Mintlify` button
+- `Swagger` button
+
+Everything else from the older GMGN-style mock header was removed.
+
+## Token terminal
+
+Visible token tabs in the local terminal:
+
+- `Trades`
+- `Holders`
+- `Top Traders`
+- `Liquidity Pool`
+- `Dev Token`
+
+Removed from the local token UI:
+
+- `Positions`
+- `Tracking`
+- `DCA`
+- `Orders`
+- `Trading Widget`
+- `Tracking` and `Renames` chips
+
+The token header now uses crawled social links from the live GMGN token page, so `Web`, `X`, `GitHub`, and `TG` render from the token header data when GMGN exposes them for that CA.
+
+## Token tab behavior
+
+- `Trades`
+  - chips are clickable
+  - filtering is local on top of the base trades feed
+- `Holders`
+  - chips are clickable
+  - each chip maps to the holders section endpoint with a real upstream filter
+- `Top Traders`
+  - chips are clickable
+  - each chip maps to the top-traders section endpoint with a real upstream filter
+- `Liquidity Pool`
+  - chips are clickable
+  - endpoint stays separate from the trade feed
+- `Dev Token`
+  - uses the normalized creator history endpoint
+
+## Pagination
+
+Tables are paginated in the local terminal.
+
+- page controls are client-side
+- the terminal can request `fetchAll=true&maxPages=12` on section endpoints
+- the UI paginates the merged row set locally after upstream batches are combined
+- if `data.summary.pagination.has_more=true`, the local scan hit its upstream page cap
+
+## Wallet terminal
+
+The wallet terminal keeps:
+
+- profile
+- stats
+- holdings
+- activity
+- rankings
+- wallet API inspector
+
+Removed from the local wallet UI:
+
+- `Tracker Rails`
+- `Track`
+- `Copy trade`
+- `Share`
+- extra wallet tabs
+
+The wallet page now keeps a single `Wallet` table area and points its inspector at the logical wallet API sections.

@@ -1,0 +1,135 @@
+---
+title: Payload Model
+description: Human-readable guide to the GMGN token API response shape.
+---
+
+# Payload Model
+
+The endpoint returns a single document that combines token metadata, market state, chart data, trade tape, holder intelligence, and crawler runtime status.
+
+## Top-level shape
+
+```json
+{
+  "ok": true,
+  "fetchedAt": "2026-03-07T10:00:00.000Z",
+  "request": {},
+  "status": {},
+  "data": {}
+}
+```
+
+## Top-level fields
+
+| Field | Type | Meaning |
+| --- | --- | --- |
+| `ok` | `boolean` | Whether the snapshot succeeded |
+| `fetchedAt` | `string` | ISO timestamp for the snapshot |
+| `request` | `object` | Echo of chain, address, resolution, and row limits |
+| `status` | `object` | Browser crawler state, page title, profile dir, and last errors |
+| `data` | `object` | The token market payload |
+| `error` | `string` | Present when the crawler is not ready or a request fails |
+
+## `data` object
+
+### `token`
+
+Identity and lifecycle metadata:
+
+- chain and mint address
+- token symbol and name
+- logo URL
+- launchpad
+- creator wallet and funding source
+- creation / pool-open timestamps
+- pair address
+- total supply, standard, and holder count
+
+### `headline`
+
+Top-of-screen metrics used by the terminal header:
+
+- `marketCapUsd`
+- `priceUsd`
+- `priceSol`
+- `liquidityUsd`
+- `volume24hUsd`
+- `totalFeesNative`
+- `totalFeesUsd`
+- `totalSupply`
+- `priceChanges`
+- `activity`
+
+### `chart`
+
+The candlestick payload used for chart rendering:
+
+- `resolution`
+- `solPriceUsd`
+- `candles[]`
+
+Each candle includes:
+
+- `time`
+- `open`
+- `high`
+- `low`
+- `close`
+- `volume`
+- `amount`
+
+### `trades`
+
+Recent trade rows with:
+
+- side (`buy` or `sell`)
+- market cap estimate
+- USD amount
+- gas cost
+- maker label
+- total trade count
+- realized and unrealized profit
+- maker tags
+
+### `holders`
+
+Holder snapshots include:
+
+- wallet label
+- token balance
+- percent of supply
+- USD value
+- realized profit
+- last active timestamp
+- wallet tags
+
+### `audit`, `pool`, `dev`, `basicData`, `security`, `walletTags`
+
+These sections feed the right-side intel rail in the terminal UI:
+
+- token concentration and burn
+- pool liquidity and reserve values
+- creator wallet behavior
+- timestamps and pair metadata
+- security signals
+- smart-wallet counts
+
+## Error mode
+
+When the crawler is not ready, the endpoint can return `503` with:
+
+```json
+{
+  "ok": false,
+  "fetchedAt": "2026-03-07T10:00:00.000Z",
+  "request": {},
+  "status": {
+    "ready": false,
+    "connected": false,
+    "lastError": "..."
+  },
+  "error": "GMGN crawler is warming up"
+}
+```
+
+For the exact contract, use the generated `API Reference` section driven by the OpenAPI file.

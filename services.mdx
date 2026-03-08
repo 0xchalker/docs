@@ -1,0 +1,49 @@
+---
+title: Services
+description: Current local services exposed for the GMGN terminal workspace.
+---
+
+# Services
+
+## UI terminal
+
+- URL: `http://localhost:3001`
+- Routes:
+  - `/`
+  - `/sol/token/{mint}`
+  - `/sol/address/{wallet}`
+
+The shell is intentionally minimal:
+
+- `Discover`
+- `Token`
+- `Wallet`
+- one search bar
+- buttons to open Mintlify and Swagger
+
+## GMGN API
+
+- URL: `http://127.0.0.1:3002`
+- Docs: `http://127.0.0.1:3002/docs`
+- OpenAPI: `http://127.0.0.1:3002/openapi.json`
+
+The token surface is split into:
+
+- aggregate compatibility endpoint
+- page-level token overview and chart
+- tab-scoped token section endpoints
+
+The wallet surface is split into:
+
+- aggregate compatibility endpoint
+- profile endpoint
+- stats endpoint
+- holdings endpoint
+- activity endpoint
+- rankings endpoint
+
+## Mintlify docs
+
+- URL: `http://localhost:3000`
+
+This port is reserved for Mintlify. The generic Vite dev server was moved off `3000` so the terminal's `Mintlify` button opens docs consistently.

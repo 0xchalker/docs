@@ -1,0 +1,151 @@
+---
+title: GMGN Wallet API
+description: Local normalized wallet endpoints served by the unified GMGN API server.
+---
+
+# GMGN Wallet API
+
+## Base URL
+
+```text
+http://127.0.0.1:3002
+```
+
+## Endpoints
+
+### `GET /api/gmgn/wallet`
+
+Returns the compatibility aggregate wallet payload.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `address` | `string` | `2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY` | Wallet address |
+| `chain` | `string` | `sol` | GMGN chain slug |
+| `period` | `string` | `7d` | One of `1d`, `7d`, `30d`, `all` |
+| `holdingsLimit` | `integer` | `50` | `8..80` |
+| `activityLimit` | `integer` | `40` | `8..120` |
+
+#### Response sections
+
+- `profile`
+- `stats`
+- `holdings`
+- `activity`
+- `rankings`
+- `endpointInventory`
+
+### `GET /api/gmgn/wallet/profile`
+
+Returns wallet identity and social metadata.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `address` | `string` | same as above | Wallet address |
+| `chain` | `string` | `sol` | GMGN chain slug |
+| `period` | `string` | `7d` | Accepted for consistent section routing |
+
+### `GET /api/gmgn/wallet/stats`
+
+This is the canonical overall wallet stats endpoint.
+
+It returns:
+
+- balance
+- total value
+- total volume
+- realized, unrealized, and total PnL
+- win rate
+- token counts
+- buy and sell counts
+- total fees
+- average holding period
+- PnL bucket and market-cap bucket counts when present upstream
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `address` | `string` | same as above | Wallet address |
+| `chain` | `string` | `sol` | GMGN chain slug |
+| `period` | `string` | `7d` | One of `1d`, `7d`, `30d`, `all` |
+
+### `GET /api/gmgn/wallet/holdings`
+
+Returns the normalized holdings table payload used by the wallet terminal.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `address` | `string` | same as above | Wallet address |
+| `chain` | `string` | `sol` | GMGN chain slug |
+| `limit` | `integer` | `50` | `8..80` |
+| `cursor` | `string` | unset | Pagination cursor |
+| `orderBy` | `string` | `last_active_timestamp` | Sort field |
+| `direction` | `string` | `desc` | Sort direction |
+| `hideSmall` | `boolean` | `false` | Hide small holdings |
+| `sellout` | `boolean` | `true` | Include sold-out positions |
+| `hideAbnormal` | `boolean` | `false` | Hide abnormal rows |
+
+### `GET /api/gmgn/wallet/activity`
+
+Returns the normalized activity feed payload used by the wallet terminal.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `address` | `string` | same as above | Wallet address |
+| `chain` | `string` | `sol` | GMGN chain slug |
+| `period` | `string` | same as aggregate page | Optional upstream filter |
+| `limit` | `integer` | `40` | `8..120` |
+| `cursor` | `string` | unset | Pagination cursor |
+
+### `GET /api/gmgn/wallet/rankings`
+
+Returns recovered wallet ranking sections. The current normalized surface focuses on:
+
+- `pnlGt5x`
+
+`marketCap` stays nullable until the upstream ranking type enum is fully recovered.
+
+#### Query parameters
+
+| Param | Type | Default | Notes |
+| --- | --- | --- | --- |
+| `address` | `string` | same as above | Wallet address |
+| `chain` | `string` | `sol` | GMGN chain slug |
+| `period` | `string` | `7d` | One of `1d`, `7d`, `30d`, `all` |
+
+## Wallet page mapping
+
+| Wallet UI block | Local endpoint |
+| --- | --- |
+| Profile card | `GET /api/gmgn/wallet/profile` |
+| Overall summary stats | `GET /api/gmgn/wallet/stats` |
+| Holdings table | `GET /api/gmgn/wallet/holdings` |
+| Activity table | `GET /api/gmgn/wallet/activity` |
+| Ranking block | `GET /api/gmgn/wallet/rankings` |
+| Compatibility aggregate | `GET /api/gmgn/wallet` |
+
+## Runtime support endpoints
+
+- `GET /health`
+- `GET /openapi.json`
+- `GET /docs`
+
+## Example
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/wallet?address=2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY&period=7d&holdingsLimit=50&activityLimit=40"
+```
+
+```bash
+curl "http://127.0.0.1:3002/api/gmgn/wallet/stats?address=2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY&period=7d"
+```
+
+Use [GMGN Wallet Endpoints](./gmgn-wallet) for the upstream endpoint inventory that this local API normalizes.
