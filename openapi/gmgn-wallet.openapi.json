@@ -3,7 +3,7 @@
   "info": {
     "title": "GMGN Wallet API",
     "version": "1.0.0",
-    "description": "Normalized GMGN wallet endpoints backed by a browser-aware wallet crawler. The public surface is organized by wallet page sections: profile, stats, holdings, activity, and rankings."
+    "description": "Normalized GMGN wallet endpoints backed by a browser-aware wallet crawler. The public surface is organized by wallet page sections: profile, stats, recent-pnl, holdings, trades, and rankings."
   },
   "servers": [
     {
@@ -48,7 +48,7 @@
           "GMGN Wallet"
         ],
         "summary": "Fetch the compatibility aggregate wallet payload",
-        "description": "Composed wallet response bundling profile, stats, holdings, activity, and rankings.",
+        "description": "Composed wallet response bundling profile, stats, recent-pnl, holdings, trades, and rankings.",
         "parameters": [
           {
             "name": "chain",
@@ -94,7 +94,7 @@
             }
           },
           {
-            "name": "activityLimit",
+            "name": "tradesLimit",
             "in": "query",
             "required": false,
             "schema": {
@@ -103,6 +103,19 @@
               "maximum": 120,
               "default": 40
             }
+          },
+          {
+            "name": "activityLimit",
+            "in": "query",
+            "required": false,
+            "deprecated": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 120,
+              "default": 40
+            },
+            "description": "Deprecated alias for tradesLimit."
           }
         ],
         "responses": {
@@ -263,7 +276,8 @@
         "tags": [
           "GMGN Wallet"
         ],
-        "summary": "Fetch normalized GMGN wallet holdings",
+        "summary": "Fetch Holdings tab data",
+        "description": "Normalized holdings table payload used by the wallet Holdings tab.",
         "parameters": [
           {
             "name": "chain",
@@ -363,12 +377,134 @@
         }
       }
     },
-    "/api/gmgn/wallet/activity": {
+    "/api/gmgn/wallet/recent-pnl": {
       "get": {
         "tags": [
           "GMGN Wallet"
         ],
-        "summary": "Fetch normalized GMGN wallet activity feed",
+        "summary": "Fetch Recent PnL tab data",
+        "description": "Recent PnL tab payload built from the wallet holdings source, sorted for recent trading PnL review.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "default": "7d"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 80,
+              "default": 50
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "last_active_timestamp"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "desc"
+            }
+          },
+          {
+            "name": "hideSmall",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          },
+          {
+            "name": "sellout",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "hideAbnormal",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Recent PnL payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletRecentPnlPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/trades": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Fetch Trades tab data",
+        "description": "Normalized public trades feed powering the wallet Trades tab.",
         "parameters": [
           {
             "name": "chain",
@@ -420,11 +556,92 @@
         ],
         "responses": {
           "200": {
-            "description": "Activity payload",
+            "description": "Trades payload",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GmgnWalletActivityPayload"
+                  "$ref": "#/components/schemas/GmgnWalletTradesPayload"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable or blocked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gmgn/wallet/activity": {
+      "get": {
+        "tags": [
+          "GMGN Wallet"
+        ],
+        "summary": "Compatibility alias for Trades",
+        "deprecated": true,
+        "description": "Deprecated alias for /api/gmgn/wallet/trades. The wallet terminal uses Trades as the primary tab name.",
+        "parameters": [
+          {
+            "name": "chain",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "sol"
+            }
+          },
+          {
+            "name": "address",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY"
+            }
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1d",
+                "7d",
+                "30d",
+                "all"
+              ],
+              "nullable": true
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 120,
+              "default": 40
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Compatibility trades payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GmgnWalletTradesPayload"
                 }
               }
             }
@@ -613,7 +830,7 @@
           "address",
           "period",
           "holdingsLimit",
-          "activityLimit"
+          "tradesLimit"
         ],
         "properties": {
           "chain": {
@@ -636,8 +853,13 @@
           "holdingsLimit": {
             "type": "integer"
           },
-          "activityLimit": {
+          "tradesLimit": {
             "type": "integer"
+          },
+          "activityLimit": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Deprecated alias kept for compatibility."
           }
         }
       },
@@ -685,7 +907,7 @@
           }
         }
       },
-      "GmgnWalletActivityRequest": {
+      "GmgnWalletTradesRequest": {
         "type": "object",
         "required": [
           "chain",
@@ -713,6 +935,9 @@
             "nullable": true
           }
         }
+      },
+      "GmgnWalletActivityRequest": {
+        "$ref": "#/components/schemas/GmgnWalletTradesRequest"
       },
       "GmgnWalletProfile": {
         "type": "object",
@@ -1460,7 +1685,9 @@
         "required": [
           "profile",
           "stats",
+          "recentPnl",
           "holdings",
+          "trades",
           "activity",
           "rankings",
           "endpointInventory"
@@ -1471,6 +1698,34 @@
           },
           "stats": {
             "$ref": "#/components/schemas/GmgnWalletStats"
+          },
+          "recentPnl": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "firstTokenAddress",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletHoldingsRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "firstTokenAddress": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletHolding"
+                }
+              }
+            }
           },
           "holdings": {
             "type": "object",
@@ -1500,6 +1755,29 @@
               }
             }
           },
+          "trades": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletTradesRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletActivityItem"
+                }
+              }
+            }
+          },
           "activity": {
             "type": "object",
             "required": [
@@ -1509,7 +1787,7 @@
             ],
             "properties": {
               "query": {
-                "$ref": "#/components/schemas/GmgnWalletActivityRequest"
+                "$ref": "#/components/schemas/GmgnWalletTradesRequest"
               },
               "nextCursor": {
                 "type": "string",
@@ -1705,7 +1983,7 @@
           }
         }
       },
-      "GmgnWalletActivityPayload": {
+      "GmgnWalletRecentPnlPayload": {
         "type": "object",
         "required": [
           "ok",
@@ -1724,7 +2002,61 @@
             "format": "date-time"
           },
           "request": {
-            "$ref": "#/components/schemas/GmgnWalletActivityRequest"
+            "$ref": "#/components/schemas/GmgnWalletHoldingsRequest"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CrawlerStatus"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "query",
+              "nextCursor",
+              "firstTokenAddress",
+              "items"
+            ],
+            "properties": {
+              "query": {
+                "$ref": "#/components/schemas/GmgnWalletHoldingsRequest"
+              },
+              "nextCursor": {
+                "type": "string",
+                "nullable": true
+              },
+              "firstTokenAddress": {
+                "type": "string",
+                "nullable": true
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/GmgnWalletHolding"
+                }
+              }
+            }
+          }
+        }
+      },
+      "GmgnWalletTradesPayload": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "$ref": "#/components/schemas/GmgnWalletTradesRequest"
           },
           "status": {
             "$ref": "#/components/schemas/CrawlerStatus"
@@ -1738,7 +2070,7 @@
             ],
             "properties": {
               "query": {
-                "$ref": "#/components/schemas/GmgnWalletActivityRequest"
+                "$ref": "#/components/schemas/GmgnWalletTradesRequest"
               },
               "nextCursor": {
                 "type": "string",
@@ -1753,6 +2085,9 @@
             }
           }
         }
+      },
+      "GmgnWalletActivityPayload": {
+        "$ref": "#/components/schemas/GmgnWalletTradesPayload"
       },
       "GmgnWalletErrorResponse": {
         "type": "object",

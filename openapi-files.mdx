@@ -31,4 +31,5 @@ npm run docs:openapi:check
 - `GMGN` also exposes a runtime Swagger page at `http://127.0.0.1:3002/docs`
 - `GMGN` runtime OpenAPI JSON is available at `http://127.0.0.1:3002/openapi.json`
 - the generated specs assume local default base URLs unless you override them before generation
-- the wallet spec documents `profile`, `stats`, `holdings`, `activity`, and `rankings` as first-class endpoints
+- the wallet spec documents `profile`, `stats`, `recent-pnl`, `holdings`, `trades`, and `rankings` as first-class endpoints
+- `/api/gmgn/wallet/activity` stays in the spec only as a deprecated compatibility alias for `/api/gmgn/wallet/trades`

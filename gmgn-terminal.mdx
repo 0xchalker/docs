@@ -78,8 +78,9 @@ The wallet terminal keeps:
 
 - profile
 - stats
+- recent PnL
 - holdings
-- activity
+- trades
 - rankings
 - wallet API inspector
 
@@ -91,4 +92,18 @@ Removed from the local wallet UI:
 - `Share`
 - extra wallet tabs
 
-The wallet page now keeps a single `Wallet` table area and points its inspector at the logical wallet API sections.
+The wallet page now keeps one three-tab data area:
+
+- `Recent PnL`
+- `Holdings`
+- `Trades`
+
+The wallet inspector points at the logical wallet API sections:
+
+- `/api/gmgn/wallet/profile`
+- `/api/gmgn/wallet/stats`
+- `/api/gmgn/wallet/recent-pnl`
+- `/api/gmgn/wallet/holdings`
+- `/api/gmgn/wallet/trades`
+- `/api/gmgn/wallet/rankings`
+- `/api/gmgn/wallet`
