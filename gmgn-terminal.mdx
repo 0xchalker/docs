@@ -12,14 +12,28 @@ description: Local route map and UI behavior for the GMGN trading terminal.
 - `http://localhost:3001/sol/token/{mint}`
 - `http://localhost:3001/sol/address/{wallet}`
 
+## Discover terminal
+
+The local Discover route is now an OKX-style Solana screener:
+
+- tabs: `Trending`, `Dex`, `New`, `Users`
+- source mapping:
+  - `Trending` -> `OKX` by default
+  - `Dex`, `New`, `Users` -> `Padre`
+- timeframe chips switch by source:
+  - `Trending`: `5m`, `1h`, `4h`, `24h`
+  - `Dex/New/Users`: `1m`, `5m`, `30m`, `1h`
+- click a row to jump to the GMGN token terminal for that CA
+- click the CA chip to copy the full token address
+
 ## Header design
 
-The shell is now intentionally reduced to:
+The shell remains intentionally reduced to:
 
 - `Discover`
 - `Token`
 - `Wallet`
-- one search field
+- one global search field
 - `Mintlify` button
 - `Swagger` button
 

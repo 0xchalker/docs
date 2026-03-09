@@ -25,6 +25,33 @@ This keeps Pump useful as both:
 
 ## Endpoint map
 
+### Home clone
+
+Use these for the `/pump` homepage clone that mirrors the Pump.fun desktop landing page:
+
+- trending card strip at the top
+- clickable homepage tabs in the middle
+- dense token table at the bottom
+
+| Local endpoint | Upstream source | UI block |
+| --- | --- | --- |
+| `GET /api/pump/home/dashboard` | aggregate | one-call payload for the full Pump homepage clone |
+| `GET /api/pump/home/trending-coins` | `frontend-api-v3 /coins/top-runners` | trending hero cards |
+| `GET /api/pump/home/table` | tab-specific homepage source | table rows for `Movers`, `Live`, `New`, `Market cap`, `Mayhem`, `Oldest`, `Last reply`, `Last trade` |
+
+Homepage tab mapping:
+
+| Tab | Upstream |
+| --- | --- |
+| `movers` | `frontend-api-v3 /coins/search-unrestricted?sort=featured` |
+| `currently_live` | `frontend-api-v3 /coins/search-unrestricted?currentlyLive=true&sort=featured` |
+| `created_timestamp` | `frontend-api-v3 /coins?sort=created_timestamp&order=DESC` |
+| `market_cap` | `frontend-api-v3 /coins?sort=market_cap&order=DESC` |
+| `mayhem` | `frontend-api-v3 /coins/mayhem-mode?sort=mayhem&order=DESC` |
+| `oldest_coins` | `frontend-api-v3 /coins?sort=created_timestamp&order=ASC` |
+| `last_reply` | `frontend-api-v3 /coins?sort=last_reply&order=DESC` |
+| `last_trade_timestamp` | `frontend-api-v3 /coins?sort=last_trade_timestamp&order=DESC` |
+
 ### Discover
 
 Use these when you want token mints and live lists.
@@ -66,6 +93,15 @@ The local API deliberately normalizes Pump into the same response contract used 
 - `request`
 - `data`
 - `error?`
+
+For the homepage clone, the table rows also include normalized batch-enriched fields:
+
+- `athMarketCap`
+- `stats.5m / 1h / 6h / 24h`
+- `txns24h`
+- `volume24h`
+- `traders24h`
+- `graphPoints`
 
 ## Discover notes
 

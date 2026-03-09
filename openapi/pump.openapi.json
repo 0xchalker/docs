@@ -13,6 +13,10 @@
   ],
   "tags": [
     {
+      "name": "Pump Home",
+      "description": "Pump.fun homepage clone endpoints"
+    },
+    {
       "name": "Pump Discover",
       "description": "Pump discover and live-list endpoints"
     },
@@ -22,6 +26,214 @@
     }
   ],
   "paths": {
+    "/api/pump/home/dashboard": {
+      "get": {
+        "tags": [
+          "Pump Home"
+        ],
+        "summary": "Fetch the full Pump homepage clone payload",
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "movers",
+                "currently_live",
+                "created_timestamp",
+                "market_cap",
+                "mayhem",
+                "oldest_coins",
+                "last_reply",
+                "last_trade_timestamp"
+              ],
+              "default": "movers"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 96,
+              "default": 48
+            }
+          },
+          {
+            "name": "trendingLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 24,
+              "default": 6
+            }
+          },
+          {
+            "name": "includeNsfw",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pump homepage clone payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpHomeDashboardResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Pump homepage clone unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpHomeDashboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pump/home/trending-coins": {
+      "get": {
+        "tags": [
+          "Pump Home"
+        ],
+        "summary": "Fetch the Pump homepage trending card strip",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 3,
+              "maximum": 24,
+              "default": 6
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Trending card payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpHomeTrendingResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Trending card payload unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpHomeTrendingResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pump/home/table": {
+      "get": {
+        "tags": [
+          "Pump Home"
+        ],
+        "summary": "Fetch the Pump homepage token table for one tab",
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "movers",
+                "currently_live",
+                "created_timestamp",
+                "market_cap",
+                "mayhem",
+                "oldest_coins",
+                "last_reply",
+                "last_trade_timestamp"
+              ],
+              "default": "movers"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 10000,
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 8,
+              "maximum": 96,
+              "default": 48
+            }
+          },
+          {
+            "name": "includeNsfw",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Homepage table payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpHomeTableResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Homepage table payload unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PumpHomeTableResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/pump/discover/dashboard": {
       "get": {
         "tags": [
@@ -1172,6 +1384,291 @@
           "linkUrl": {
             "type": "string",
             "description": "Pump relative link",
+            "nullable": true
+          }
+        }
+      },
+      "PumpHomeWindowStats": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "numTxs": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Transaction count",
+            "nullable": true
+          },
+          "volumeUSD": {
+            "type": "number",
+            "description": "Volume in USD",
+            "nullable": true
+          },
+          "numUsers": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Unique trader count",
+            "nullable": true
+          },
+          "priceChangePercent": {
+            "type": "number",
+            "description": "Price change percent",
+            "nullable": true
+          }
+        }
+      },
+      "PumpHomeWindowMap": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "5m",
+          "1h",
+          "6h",
+          "24h"
+        ],
+        "properties": {
+          "5m": {
+            "$ref": "#/components/schemas/PumpHomeWindowStats"
+          },
+          "1h": {
+            "$ref": "#/components/schemas/PumpHomeWindowStats"
+          },
+          "6h": {
+            "$ref": "#/components/schemas/PumpHomeWindowStats"
+          },
+          "24h": {
+            "$ref": "#/components/schemas/PumpHomeWindowStats"
+          }
+        }
+      },
+      "PumpHomeTrendingData": {
+        "type": "object",
+        "required": [
+          "items",
+          "totalRows",
+          "tokenMints"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PumpCoinSummary"
+            }
+          },
+          "totalRows": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Number of trending cards returned"
+          },
+          "tokenMints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "PumpHomeTrendingResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PumpHomeTrendingData"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error",
+            "nullable": true
+          }
+        }
+      },
+      "PumpHomeRow": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/PumpCoinSummary"
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "stats": {
+                "$ref": "#/components/schemas/PumpHomeWindowMap"
+              },
+              "txns24h": {
+                "type": "integer",
+                "format": "int64",
+                "description": "24h transaction count",
+                "nullable": true
+              },
+              "volume24h": {
+                "type": "number",
+                "description": "24h USD volume",
+                "nullable": true
+              },
+              "traders24h": {
+                "type": "integer",
+                "format": "int64",
+                "description": "24h trader count",
+                "nullable": true
+              },
+              "graphPoints": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "PumpHomeTableData": {
+        "type": "object",
+        "required": [
+          "tab",
+          "offset",
+          "limit",
+          "nextOffset",
+          "hasMore",
+          "totalRowsEstimate",
+          "tokenMints",
+          "items"
+        ],
+        "properties": {
+          "tab": {
+            "type": "string",
+            "enum": [
+              "movers",
+              "currently_live",
+              "created_timestamp",
+              "market_cap",
+              "mayhem",
+              "oldest_coins",
+              "last_reply",
+              "last_trade_timestamp"
+            ]
+          },
+          "offset": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Current row offset"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Requested row limit"
+          },
+          "nextOffset": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Next offset when more rows exist",
+            "nullable": true
+          },
+          "hasMore": {
+            "type": "boolean"
+          },
+          "totalRowsEstimate": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Minimum total row estimate based on current pagination"
+          },
+          "tokenMints": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PumpHomeRow"
+            }
+          }
+        }
+      },
+      "PumpHomeTableResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/PumpHomeTableData"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error",
+            "nullable": true
+          }
+        }
+      },
+      "PumpHomeDashboardResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "trending",
+              "table"
+            ],
+            "properties": {
+              "trending": {
+                "$ref": "#/components/schemas/PumpHomeTrendingData"
+              },
+              "table": {
+                "$ref": "#/components/schemas/PumpHomeTableData"
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error",
             "nullable": true
           }
         }

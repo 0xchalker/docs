@@ -10,6 +10,7 @@ These files drive the `API Reference` tab in Mintlify and can also be imported i
 ## Files
 
 - `docs/openapi/discover.openapi.json`
+- `docs/openapi/dexscreener.openapi.json`
 - `docs/openapi/gmgn-token.openapi.json`
 - `docs/openapi/gmgn-wallet.openapi.json`
 - `docs/openapi/pump.openapi.json`
@@ -35,5 +36,6 @@ npm run docs:openapi:check
 - the generated specs assume local default base URLs unless you override them before generation
 - the discover spec documents the unified `GET /api/discover/solana` endpoint used by the local screener UI
 - the wallet spec documents `profile`, `stats`, `recent-pnl`, `holdings`, `trades`, and `rankings` as first-class endpoints
+- the Dexscreener spec documents latest list feeds, search, pair lookups, token lookups, and token orders
 - the Pump spec documents both route-derived discover lists and coin-level detail endpoints
 - `/api/gmgn/wallet/activity` stays in the spec only as a deprecated compatibility alias for `/api/gmgn/wallet/trades`

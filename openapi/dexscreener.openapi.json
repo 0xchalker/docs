@@ -1,0 +1,1249 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Dexscreener API",
+    "version": "1.0.0",
+    "description": "Normalized local wrapper around the official Dexscreener API. Includes latest list feeds, search, pair lookups, token lookups, orders, and a small aggregate dashboard endpoint."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3002",
+      "description": "Local API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Dexscreener Dashboard",
+      "description": "Aggregate latest Dexscreener list endpoints."
+    },
+    {
+      "name": "Dexscreener Latest",
+      "description": "Latest public list endpoints such as profiles, boosts, ads, and community takeovers."
+    },
+    {
+      "name": "Dexscreener Market",
+      "description": "Search, pair, token, and orders endpoints."
+    }
+  ],
+  "paths": {
+    "/api/dexscreener/dashboard": {
+      "get": {
+        "tags": [
+          "Dexscreener Dashboard"
+        ],
+        "summary": "Fetch an aggregate Dexscreener dashboard payload",
+        "parameters": [
+          {
+            "name": "profilesLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 12
+            }
+          },
+          {
+            "name": "takeoversLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 12
+            }
+          },
+          {
+            "name": "adsLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 12
+            }
+          },
+          {
+            "name": "latestBoostsLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 12
+            }
+          },
+          {
+            "name": "topBoostsLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 12
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Dexscreener dashboard payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerDashboardResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Dexscreener dashboard unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerDashboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/token-profiles/latest": {
+      "get": {
+        "tags": [
+          "Dexscreener Latest"
+        ],
+        "summary": "Fetch the latest token profiles feed",
+        "description": "Official upstream rate limit: 60 requests per minute.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 20
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest token profiles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerLatestListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/community-takeovers/latest": {
+      "get": {
+        "tags": [
+          "Dexscreener Latest"
+        ],
+        "summary": "Fetch the latest community takeovers feed",
+        "description": "Official upstream rate limit: 60 requests per minute.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 20
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest community takeovers",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerLatestListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/ads/latest": {
+      "get": {
+        "tags": [
+          "Dexscreener Latest"
+        ],
+        "summary": "Fetch the latest ads feed",
+        "description": "Official upstream rate limit: 60 requests per minute.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 20
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest ads",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerLatestListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/token-boosts/latest": {
+      "get": {
+        "tags": [
+          "Dexscreener Latest"
+        ],
+        "summary": "Fetch the latest token boosts feed",
+        "description": "Official upstream rate limit: 60 requests per minute.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 20
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Latest token boosts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerLatestListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/token-boosts/top": {
+      "get": {
+        "tags": [
+          "Dexscreener Latest"
+        ],
+        "summary": "Fetch the top token boosts feed",
+        "description": "Official upstream rate limit: 60 requests per minute.",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 20
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Top token boosts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerLatestListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/orders": {
+      "get": {
+        "tags": [
+          "Dexscreener Market"
+        ],
+        "summary": "Fetch paid orders for a token",
+        "description": "Official upstream rate limit: 60 requests per minute.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "solana",
+              "example": "solana"
+            }
+          },
+          {
+            "name": "tokenAddress",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token orders and boosts payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerOrdersResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/search": {
+      "get": {
+        "tags": [
+          "Dexscreener Market"
+        ],
+        "summary": "Search pairs by free-text query",
+        "description": "Official upstream rate limit: 300 requests per minute.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "SOL/USDC",
+              "example": "SOL/USDC"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 25
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerPairsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/pairs/by-pair": {
+      "get": {
+        "tags": [
+          "Dexscreener Market"
+        ],
+        "summary": "Fetch one or more pairs by pair address",
+        "description": "Official upstream rate limit: 300 requests per minute.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "solana",
+              "example": "solana"
+            }
+          },
+          {
+            "name": "pairId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE"
+            },
+            "description": "Single pair address. You can also use pairIds with comma-separated values."
+          },
+          {
+            "name": "pairIds",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "Czfq3xZZDmsdGdUyrNLtRhGc47cXcZtLG4crryfu44zE,8HoQnePLqPj4M7PUDzfw8e3Ymdwgc7NLGnaTUapubyvu"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 30,
+              "default": 30
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pair lookup result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerPairsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/pairs/by-token": {
+      "get": {
+        "tags": [
+          "Dexscreener Market"
+        ],
+        "summary": "Fetch pairs for a single token address",
+        "description": "Official upstream rate limit: 300 requests per minute.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "solana",
+              "example": "solana"
+            }
+          },
+          {
+            "name": "tokenAddress",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "So11111111111111111111111111111111111111112"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 30
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pairs for one token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerPairsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/dexscreener/pairs/by-tokens": {
+      "get": {
+        "tags": [
+          "Dexscreener Market"
+        ],
+        "summary": "Fetch pairs for multiple token addresses",
+        "description": "Official upstream rate limit: 300 requests per minute.",
+        "parameters": [
+          {
+            "name": "chainId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "solana",
+              "example": "solana"
+            }
+          },
+          {
+            "name": "tokenAddresses",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "So11111111111111111111111111111111111111112,JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN"
+            },
+            "description": "Comma-separated token addresses. Official upstream limit is 30 addresses per request."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 30
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "description": "Bypass the local short-lived cache when true."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Pairs for multiple tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DexscreenerPairsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DexscreenerStatus": {
+        "type": "object",
+        "required": [
+          "ready",
+          "cacheEntries",
+          "lastFetchedAt",
+          "lastError"
+        ],
+        "properties": {
+          "ready": {
+            "type": "boolean",
+            "description": "Whether the local Dexscreener wrapper has succeeded recently.",
+            "example": true
+          },
+          "cacheEntries": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Current short-lived cache entries.",
+            "example": 0
+          },
+          "lastFetchedAt": {
+            "type": "string",
+            "description": "Last successful upstream fetch timestamp.",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "description": "Most recent upstream error.",
+            "nullable": true
+          }
+        }
+      },
+      "DexLink": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Link type when provided by Dexscreener.",
+            "nullable": true
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable label when provided by Dexscreener.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Absolute target URL.",
+            "example": "https://x.com/Dexscreener"
+          }
+        }
+      },
+      "DexLatestItem": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "Dexscreener page URL.",
+            "nullable": true
+          },
+          "chainId": {
+            "type": "string",
+            "description": "Chain id.",
+            "nullable": true,
+            "example": "solana"
+          },
+          "tokenAddress": {
+            "type": "string",
+            "description": "Token contract / mint address.",
+            "nullable": true
+          },
+          "icon": {
+            "type": "string",
+            "description": "Icon URL or icon id depending on endpoint.",
+            "nullable": true
+          },
+          "header": {
+            "type": "string",
+            "description": "Header image URL.",
+            "nullable": true
+          },
+          "openGraph": {
+            "type": "string",
+            "description": "OpenGraph image URL.",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "Description text.",
+            "nullable": true
+          },
+          "links": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DexLink"
+            }
+          },
+          "amount": {
+            "type": "number",
+            "description": "Amount on latest boosts endpoints.",
+            "nullable": true
+          },
+          "totalAmount": {
+            "type": "number",
+            "description": "Total boost amount on boosts endpoints.",
+            "nullable": true
+          },
+          "cto": {
+            "type": "boolean",
+            "description": "Community takeover flag when present."
+          }
+        }
+      },
+      "DexTokenRef": {
+        "type": "object",
+        "properties": {
+          "address": {
+            "type": "string",
+            "description": "Token address.",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "description": "Token name.",
+            "nullable": true
+          },
+          "symbol": {
+            "type": "string",
+            "description": "Token symbol.",
+            "nullable": true
+          }
+        }
+      },
+      "DexPair": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "description": "Chain id.",
+            "nullable": true
+          },
+          "dexId": {
+            "type": "string",
+            "description": "Dex id.",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "description": "Dexscreener pair page URL.",
+            "nullable": true
+          },
+          "pairAddress": {
+            "type": "string",
+            "description": "Pair address.",
+            "nullable": true
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "baseToken": {
+            "$ref": "#/components/schemas/DexTokenRef"
+          },
+          "quoteToken": {
+            "$ref": "#/components/schemas/DexTokenRef"
+          },
+          "priceNative": {
+            "type": "string",
+            "description": "Quoted native price.",
+            "nullable": true
+          },
+          "priceUsd": {
+            "type": "string",
+            "description": "USD price.",
+            "nullable": true
+          },
+          "txns": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "buys": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Buys count.",
+                  "example": 0
+                },
+                "sells": {
+                  "type": "integer",
+                  "format": "int64",
+                  "description": "Sells count.",
+                  "example": 0
+                }
+              }
+            }
+          },
+          "volume": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "priceChange": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "liquidity": {
+            "type": "object",
+            "properties": {
+              "usd": {
+                "type": "number",
+                "description": "Liquidity in USD.",
+                "nullable": true
+              },
+              "base": {
+                "type": "number",
+                "description": "Base token liquidity.",
+                "nullable": true
+              },
+              "quote": {
+                "type": "number",
+                "description": "Quote token liquidity.",
+                "nullable": true
+              }
+            }
+          },
+          "fdv": {
+            "type": "number",
+            "description": "Fully diluted valuation.",
+            "nullable": true
+          },
+          "marketCap": {
+            "type": "number",
+            "description": "Market cap.",
+            "nullable": true
+          },
+          "pairCreatedAt": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Pair creation timestamp in ms."
+          },
+          "info": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "boosts": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      },
+      "DexOrder": {
+        "type": "object",
+        "properties": {
+          "chainId": {
+            "type": "string",
+            "description": "Chain id.",
+            "nullable": true
+          },
+          "tokenAddress": {
+            "type": "string",
+            "description": "Token address.",
+            "nullable": true
+          },
+          "type": {
+            "type": "string",
+            "description": "Order type.",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "Order status.",
+            "nullable": true
+          },
+          "paymentTimestamp": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Payment timestamp in ms."
+          }
+        }
+      },
+      "DexscreenerLatestListResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the request succeeded.",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "Fetch timestamp."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/DexscreenerStatus"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "items",
+              "totalItems"
+            ],
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DexLatestItem"
+                }
+              },
+              "totalItems": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Total items returned by upstream."
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message.",
+            "nullable": true
+          }
+        }
+      },
+      "DexscreenerPairsResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the request succeeded.",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "Fetch timestamp."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/DexscreenerStatus"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "pairs",
+              "totalPairs",
+              "upstreamTotalPairs"
+            ],
+            "properties": {
+              "query": {
+                "type": "string",
+                "description": "Search query when applicable.",
+                "nullable": true
+              },
+              "schemaVersion": {
+                "type": "string",
+                "description": "Upstream schema version when present.",
+                "nullable": true
+              },
+              "pairs": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DexPair"
+                }
+              },
+              "totalPairs": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Pairs returned after local limit/slice."
+              },
+              "upstreamTotalPairs": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Raw pair count from upstream before local slicing."
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message.",
+            "nullable": true
+          }
+        }
+      },
+      "DexscreenerOrdersResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the request succeeded.",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "Fetch timestamp."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/DexscreenerStatus"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "orders",
+              "boosts",
+              "totalOrders",
+              "totalBoosts",
+              "hasBoosts"
+            ],
+            "properties": {
+              "orders": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DexOrder"
+                }
+              },
+              "boosts": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              },
+              "totalOrders": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Order count."
+              },
+              "totalBoosts": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Boost count."
+              },
+              "hasBoosts": {
+                "type": "boolean",
+                "description": "Whether the token has boosts."
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message.",
+            "nullable": true
+          }
+        }
+      },
+      "DexscreenerDashboardResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data",
+          "status"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "description": "Whether the request succeeded.",
+            "example": true
+          },
+          "fetchedAt": {
+            "type": "string",
+            "description": "Fetch timestamp."
+          },
+          "request": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "status": {
+            "$ref": "#/components/schemas/DexscreenerStatus"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "profiles": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DexLatestItem"
+                    }
+                  },
+                  "totalItems": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Profile count."
+                  }
+                }
+              },
+              "communityTakeovers": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DexLatestItem"
+                    }
+                  },
+                  "totalItems": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Community takeover count."
+                  }
+                }
+              },
+              "ads": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DexLatestItem"
+                    }
+                  },
+                  "totalItems": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Ads count."
+                  }
+                }
+              },
+              "latestBoosts": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DexLatestItem"
+                    }
+                  },
+                  "totalItems": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Latest boosts count."
+                  }
+                }
+              },
+              "topBoosts": {
+                "type": "object",
+                "properties": {
+                  "items": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/DexLatestItem"
+                    }
+                  },
+                  "totalItems": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Top boosts count."
+                  }
+                }
+              }
+            }
+          },
+          "error": {
+            "type": "string",
+            "description": "Error message.",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

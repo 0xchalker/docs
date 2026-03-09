@@ -16,6 +16,7 @@ This serves:
 - `GET /health`
 - `GET /openapi.json`
 - `GET /docs`
+- `GET /api/dexscreener/*`
 - `GET /api/gmgn/token`
 - `GET /api/gmgn/token/*`
 - `GET /api/gmgn/wallet`
@@ -42,6 +43,7 @@ npm run docs:openapi:dev
 Open:
 
 - `http://localhost:3000/`
+- `https://memelabs.mintlify.app/`
 
 Note:
 
@@ -89,4 +91,10 @@ curl "http://127.0.0.1:3002/api/gmgn/wallet?address=2tgUbS9UMoQD6GkDZBiqKYCURnGr
 
 ```bash
 curl "http://127.0.0.1:3002/api/gmgn/wallet/stats?address=2tgUbS9UMoQD6GkDZBiqKYCURnGrSb6ocYwRABrSJUvY&period=7d"
+```
+
+### Dexscreener search
+
+```bash
+curl "http://127.0.0.1:3002/api/dexscreener/search?q=SOL/USDC&limit=10"
 ```
