@@ -1,9 +1,9 @@
 {
   "openapi": "3.0.3",
   "info": {
-    "title": "OKX Solana Trending API",
-    "version": "1.0.0",
-    "description": "Realtime Solana trending data mirrored from the OKX Web3 token screener page, with timeframe fan-out and local response caching."
+    "title": "OKX Solana Discover API",
+    "version": "2.0.0",
+    "description": "Solana trending CA discovery sourced from the OKX Web3 token screener. Returns address-first lists that can be fed into GMGN token detail endpoints."
   },
   "servers": [
     {
@@ -13,72 +13,18 @@
   ],
   "tags": [
     {
-      "name": "System",
-      "description": "Health and runtime status"
-    },
-    {
-      "name": "OKX",
-      "description": "Solana trending token snapshots from OKX"
+      "name": "OKX Discover",
+      "description": "Trending CA lists from OKX"
     }
   ],
   "paths": {
-    "/health": {
+    "/api/discover/okx/solana/trending": {
       "get": {
         "tags": [
-          "System"
+          "OKX Discover"
         ],
-        "summary": "Check server health",
-        "responses": {
-          "200": {
-            "description": "Service health",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean"
-                    },
-                    "service": {
-                      "type": "string",
-                      "example": "okx-trending-api"
-                    },
-                    "now": {
-                      "type": "string",
-                      "format": "date-time"
-                    }
-                  },
-                  "required": [
-                    "ok",
-                    "service",
-                    "now"
-                  ]
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/okx/solana/trending": {
-      "get": {
-        "tags": [
-          "OKX"
-        ],
-        "summary": "Fetch Solana trending tables from OKX",
-        "description": "Returns all requested timeframes in one payload, filtered to Solana only, with crawler-level caching.",
+        "summary": "Fetch Solana trending CA lists from OKX",
         "parameters": [
-          {
-            "name": "pageSize",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "minimum": 10,
-              "maximum": 100,
-              "default": 100
-            },
-            "description": "Rows requested per upstream OKX page"
-          },
           {
             "name": "timeframes",
             "in": "query",
@@ -86,89 +32,17 @@
               "type": "string",
               "default": "5m,1h,4h,24h",
               "example": "5m,1h,4h,24h"
-            },
-            "description": "Comma-separated timeframe labels"
+            }
           },
           {
-            "name": "marketCapMin",
+            "name": "itemLimit",
             "in": "query",
             "schema": {
-              "type": "string",
-              "default": "100000"
-            },
-            "description": "Minimum market cap filter"
-          },
-          {
-            "name": "mcpmi",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "100000"
-            },
-            "description": "Alias for marketCapMin"
-          },
-          {
-            "name": "tokenAgeMax",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "48"
-            },
-            "description": "Maximum token age filter in hours"
-          },
-          {
-            "name": "tama",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "48"
-            },
-            "description": "Alias for tokenAgeMax"
-          },
-          {
-            "name": "volumeMin",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "10000"
-            },
-            "description": "Minimum volume filter"
-          },
-          {
-            "name": "vmi",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "10000"
-            },
-            "description": "Alias for volumeMin"
-          },
-          {
-            "name": "liquidityMin",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "default": "5000"
-            },
-            "description": "Minimum liquidity filter"
-          },
-          {
-            "name": "riskFilter",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": true
-            },
-            "description": "Enable OKX risk filter"
-          },
-          {
-            "name": "stableTokenFilter",
-            "in": "query",
-            "schema": {
-              "type": "boolean",
-              "default": true
-            },
-            "description": "Exclude stable tokens"
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 80
+            }
           },
           {
             "name": "ttlMs",
@@ -178,52 +52,24 @@
               "minimum": 0,
               "maximum": 60000,
               "default": 8000
-            },
-            "description": "Local cache TTL in milliseconds"
+            }
           },
           {
             "name": "refresh",
             "in": "query",
             "schema": {
-              "type": "string",
-              "enum": [
-                "1"
-              ],
-              "nullable": true
-            },
-            "description": "Force bypass of the local cache"
+              "type": "boolean",
+              "default": false
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Trending payload",
+            "description": "Trending CA payload",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OkxTrendingResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Crawler failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "ok": {
-                      "type": "boolean",
-                      "example": false
-                    },
-                    "error": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "ok",
-                    "error"
-                  ]
+                  "$ref": "#/components/schemas/OkxDiscoverResponse"
                 }
               }
             }
@@ -234,15 +80,106 @@
   },
   "components": {
     "schemas": {
-      "OkxRow": {
-        "type": "object",
-        "description": "Raw upstream OKX row. Field coverage can expand as OKX changes its market table payload.",
-        "additionalProperties": true
-      },
-      "OkxTimeframeSnapshot": {
+      "OkxDiscoverItem": {
         "type": "object",
         "properties": {
-          "label": {
+          "rank": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Preview rank"
+          },
+          "tokenAddress": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Logo url",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "example": "okx"
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Protocol",
+            "nullable": true
+          },
+          "launchpad": {
+            "type": "string",
+            "description": "Launchpad",
+            "nullable": true
+          },
+          "marketCapUsd": {
+            "type": "number",
+            "description": "Market cap",
+            "nullable": true
+          },
+          "liquidityUsd": {
+            "type": "number",
+            "description": "Liquidity",
+            "nullable": true
+          },
+          "volumeUsd": {
+            "type": "number",
+            "description": "Selected timeframe volume",
+            "nullable": true
+          },
+          "totalVolumeUsd": {
+            "type": "number",
+            "description": "Total volume",
+            "nullable": true
+          },
+          "totalTxns": {
+            "type": "number",
+            "description": "Transactions",
+            "nullable": true
+          },
+          "totalHolders": {
+            "type": "number",
+            "description": "Holders",
+            "nullable": true
+          },
+          "recentVisitors": {
+            "type": "number",
+            "description": "Search count / interest",
+            "nullable": true
+          },
+          "priceChangePct": {
+            "type": "number",
+            "description": "Price change",
+            "nullable": true
+          }
+        },
+        "required": [
+          "rank",
+          "tokenAddress",
+          "symbol",
+          "name",
+          "avatarUrl",
+          "source",
+          "protocol",
+          "launchpad",
+          "marketCapUsd",
+          "liquidityUsd",
+          "volumeUsd",
+          "totalVolumeUsd",
+          "totalTxns",
+          "totalHolders",
+          "recentVisitors",
+          "priceChangePct"
+        ]
+      },
+      "OkxDiscoverTimeframe": {
+        "type": "object",
+        "properties": {
+          "timeframe": {
             "type": "string",
             "enum": [
               "5m",
@@ -251,144 +188,40 @@
               "24h"
             ]
           },
-          "periodType": {
-            "type": "integer",
-            "format": "int64",
-            "description": "OKX internal timeframe id"
-          },
-          "requestParams": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "totalPages": {
-            "type": "integer",
-            "format": "int64",
-            "description": "Total upstream pages"
-          },
           "totalRows": {
             "type": "integer",
             "format": "int64",
-            "description": "Rows returned after Solana filtering"
+            "description": "Total OKX rows for the timeframe"
           },
-          "fields": {
+          "tokenAddresses": {
             "type": "array",
             "items": {
               "type": "string"
             }
           },
-          "marketListsFilter": {
-            "type": "object",
-            "nullable": true,
-            "additionalProperties": true
-          },
-          "rows": {
+          "items": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/OkxRow"
+              "$ref": "#/components/schemas/OkxDiscoverItem"
             }
           }
         },
         "required": [
-          "label",
-          "periodType",
-          "requestParams",
-          "totalPages",
+          "timeframe",
           "totalRows",
-          "fields",
-          "marketListsFilter",
-          "rows"
+          "tokenAddresses",
+          "items"
         ]
       },
-      "OkxTrendingData": {
-        "type": "object",
-        "properties": {
-          "sourceUrl": {
-            "type": "string"
-          },
-          "fetchedAt": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "chain": {
-            "type": "object",
-            "properties": {
-              "chainId": {
-                "type": "string",
-                "example": "501"
-              },
-              "chainName": {
-                "type": "string",
-                "example": "Solana"
-              },
-              "chainLogo": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "chainId",
-              "chainName",
-              "chainLogo"
-            ]
-          },
-          "filters": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "categories": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "categoryModules": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "additionalProperties": true
-            }
-          },
-          "protocols": {
-            "type": "object",
-            "additionalProperties": true
-          },
-          "timeframes": {
-            "type": "object",
-            "properties": {
-              "5m": {
-                "$ref": "#/components/schemas/OkxTimeframeSnapshot"
-              },
-              "1h": {
-                "$ref": "#/components/schemas/OkxTimeframeSnapshot"
-              },
-              "4h": {
-                "$ref": "#/components/schemas/OkxTimeframeSnapshot"
-              },
-              "24h": {
-                "$ref": "#/components/schemas/OkxTimeframeSnapshot"
-              }
-            },
-            "additionalProperties": {
-              "$ref": "#/components/schemas/OkxTimeframeSnapshot"
-            }
-          }
-        },
-        "required": [
-          "sourceUrl",
-          "fetchedAt",
-          "chain",
-          "filters",
-          "categories",
-          "categoryModules",
-          "protocols",
-          "timeframes"
-        ]
-      },
-      "OkxTrendingResponse": {
+      "OkxDiscoverResponse": {
         "type": "object",
         "properties": {
           "ok": {
             "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
           },
           "cachedAt": {
             "type": "string",
@@ -396,41 +229,86 @@
           },
           "cacheAgeMs": {
             "type": "number",
-            "description": "Age of the local cache entry"
+            "description": "Cache age"
           },
           "request": {
             "type": "object",
             "properties": {
-              "pageSize": {
-                "type": "integer",
-                "format": "int64",
-                "description": "Requested upstream page size"
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "source": {
+                "type": "string",
+                "example": "okx"
               },
               "timeframes": {
                 "type": "array",
                 "items": {
-                  "type": "integer",
-                  "format": "int64",
-                  "description": "OKX timeframe ids"
+                  "type": "string",
+                  "enum": [
+                    "5m",
+                    "1h",
+                    "4h",
+                    "24h"
+                  ]
                 }
               },
-              "filters": {
-                "type": "object",
-                "additionalProperties": true
+              "itemLimit": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Preview item limit"
               }
             },
             "required": [
-              "pageSize",
+              "chain",
+              "source",
               "timeframes",
-              "filters"
+              "itemLimit"
             ]
           },
           "data": {
-            "$ref": "#/components/schemas/OkxTrendingData"
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "source": {
+                "type": "string",
+                "example": "okx"
+              },
+              "timeframes": {
+                "type": "object",
+                "properties": {
+                  "5m": {
+                    "$ref": "#/components/schemas/OkxDiscoverTimeframe"
+                  },
+                  "1h": {
+                    "$ref": "#/components/schemas/OkxDiscoverTimeframe"
+                  },
+                  "4h": {
+                    "$ref": "#/components/schemas/OkxDiscoverTimeframe"
+                  },
+                  "24h": {
+                    "$ref": "#/components/schemas/OkxDiscoverTimeframe"
+                  }
+                },
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/OkxDiscoverTimeframe"
+                }
+              }
+            },
+            "required": [
+              "chain",
+              "source",
+              "timeframes"
+            ]
           }
         },
         "required": [
           "ok",
+          "fetchedAt",
           "cachedAt",
           "cacheAgeMs",
           "request",

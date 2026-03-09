@@ -38,13 +38,18 @@
             "group": "Overview",
             "pages": [
               "api-reference/introduction",
+              "discover-api",
               "gmgn-token",
               "gmgn-wallet-api",
+              "pump-api",
               "okx-trending",
               "padre-trending",
-              "padre-streaming",
               "openapi-files"
             ]
+          },
+          {
+            "group": "Discover",
+            "openapi": "openapi/discover.openapi.json"
           },
           {
             "group": "GMGN Token",
@@ -53,6 +58,10 @@
           {
             "group": "GMGN Wallet",
             "openapi": "openapi/gmgn-wallet.openapi.json"
+          },
+          {
+            "group": "Pump",
+            "openapi": "openapi/pump.openapi.json"
           },
           {
             "group": "OKX Trending",

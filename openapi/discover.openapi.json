@@ -1,0 +1,869 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Discover API",
+    "version": "1.0.0",
+    "description": "Solana discover endpoints used by the OKX-style local terminal. OKX powers Trending. Padre powers Trending, Dex, New, and Users tab snapshots."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3002",
+      "description": "Local API server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Discover",
+      "description": "Unified discover entrypoints for the terminal UI"
+    },
+    {
+      "name": "OKX Discover",
+      "description": "Solana trending CA lists from OKX"
+    },
+    {
+      "name": "Padre Discover",
+      "description": "Solana tab snapshots and CA lists from Padre"
+    }
+  ],
+  "paths": {
+    "/api/discover/solana": {
+      "get": {
+        "tags": [
+          "Discover"
+        ],
+        "summary": "Fetch the active Discover tab",
+        "description": "Unified discover endpoint used by the terminal UI. `Trending` defaults to OKX. `Dex`, `New`, and `Users` resolve to Padre.",
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "trending",
+                "dex",
+                "new",
+                "users"
+              ],
+              "default": "trending"
+            }
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "1h"
+            },
+            "description": "Trending accepts `5m`, `1h`, `4h`, `24h` from OKX. Padre tabs accept `1m`, `5m`, `30m`, `1h`."
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 60
+            }
+          },
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "auto",
+                "okx",
+                "padre"
+              ],
+              "default": "auto"
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Discover payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler or upstream unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DiscoverResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/discover/okx/solana/trending": {
+      "get": {
+        "tags": [
+          "OKX Discover"
+        ],
+        "summary": "Fetch OKX Solana trending CA lists",
+        "parameters": [
+          {
+            "name": "timeframes",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "default": "5m,1h,4h,24h",
+              "example": "5m,1h,4h,24h"
+            }
+          },
+          {
+            "name": "itemLimit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 200,
+              "default": 80
+            },
+            "description": "Maximum preview rows returned per timeframe."
+          },
+          {
+            "name": "ttlMs",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 60000,
+              "default": 8000
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OKX discover payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkxDiscoverResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/discover/padre/solana/tokens": {
+      "get": {
+        "tags": [
+          "Padre Discover"
+        ],
+        "summary": "Fetch Padre Solana CA lists by tab and timeframe",
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "trending",
+                "dex",
+                "new",
+                "users"
+              ],
+              "default": "trending"
+            }
+          },
+          {
+            "name": "timeframe",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1m",
+                "5m",
+                "30m",
+                "1h"
+              ],
+              "default": "5m"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 60,
+              "default": 30
+            }
+          },
+          {
+            "name": "ttlMs",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 60000,
+              "default": 8000
+            }
+          },
+          {
+            "name": "refresh",
+            "in": "query",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Padre discover payload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PadreDiscoverResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Crawler unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PadreDiscoverResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DiscoverStatus": {
+        "type": "object",
+        "properties": {
+          "connected": {
+            "type": "boolean"
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "pageUrl": {
+            "type": "string",
+            "description": "Page url",
+            "nullable": true
+          },
+          "profileDir": {
+            "type": "string",
+            "description": "Profile directory",
+            "nullable": true
+          },
+          "lastFrameAt": {
+            "type": "string",
+            "description": "Last websocket frame",
+            "nullable": true
+          },
+          "lastActionAt": {
+            "type": "string",
+            "description": "Last selected tab/timeframe capture",
+            "nullable": true
+          },
+          "lastMatchScore": {
+            "type": "number",
+            "description": "DOM-to-snapshot match score",
+            "nullable": true
+          },
+          "lastSelectedTab": {
+            "type": "string",
+            "description": "Last selected tab",
+            "nullable": true
+          },
+          "lastSelectedTimeframe": {
+            "type": "string",
+            "description": "Last selected timeframe",
+            "nullable": true
+          },
+          "lastError": {
+            "type": "string",
+            "description": "Last crawler error",
+            "nullable": true
+          },
+          "snapshotsTracked": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Tracked snapshots"
+          },
+          "cacheEntries": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Cached selections"
+          }
+        },
+        "required": [
+          "connected",
+          "ready",
+          "pageUrl",
+          "profileDir",
+          "lastFrameAt",
+          "lastActionAt",
+          "lastMatchScore",
+          "lastSelectedTab",
+          "lastSelectedTimeframe",
+          "lastError",
+          "snapshotsTracked",
+          "cacheEntries"
+        ]
+      },
+      "DiscoverItem": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Row rank",
+            "nullable": true
+          },
+          "tokenAddress": {
+            "type": "string"
+          },
+          "symbol": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "description": "Token avatar",
+            "nullable": true
+          },
+          "source": {
+            "type": "string",
+            "example": "okx"
+          },
+          "protocol": {
+            "type": "string",
+            "description": "Protocol",
+            "nullable": true
+          },
+          "launchpad": {
+            "type": "string",
+            "description": "Launchpad",
+            "nullable": true
+          },
+          "marketCapUsd": {
+            "type": "number",
+            "description": "Market cap",
+            "nullable": true
+          },
+          "liquidityUsd": {
+            "type": "number",
+            "description": "Liquidity",
+            "nullable": true
+          },
+          "volumeUsd": {
+            "type": "number",
+            "description": "Selected timeframe volume",
+            "nullable": true
+          },
+          "totalVolumeUsd": {
+            "type": "number",
+            "description": "Lifetime volume",
+            "nullable": true
+          },
+          "totalTxns": {
+            "type": "number",
+            "description": "Transactions",
+            "nullable": true
+          },
+          "totalHolders": {
+            "type": "number",
+            "description": "Holders",
+            "nullable": true
+          },
+          "recentVisitors": {
+            "type": "number",
+            "description": "Recent visitors",
+            "nullable": true
+          },
+          "priceChangePct": {
+            "type": "number",
+            "description": "Selected timeframe price change",
+            "nullable": true
+          }
+        },
+        "required": [
+          "tokenAddress",
+          "symbol",
+          "name",
+          "avatarUrl",
+          "source",
+          "protocol",
+          "launchpad",
+          "marketCapUsd",
+          "liquidityUsd",
+          "volumeUsd",
+          "totalVolumeUsd",
+          "totalTxns",
+          "totalHolders",
+          "recentVisitors",
+          "priceChangePct"
+        ]
+      },
+      "OkxDiscoverSnapshot": {
+        "type": "object",
+        "properties": {
+          "timeframe": {
+            "type": "string",
+            "enum": [
+              "5m",
+              "1h",
+              "4h",
+              "24h"
+            ]
+          },
+          "totalRows": {
+            "type": "integer",
+            "format": "int64",
+            "description": "Total OKX rows after Solana filtering"
+          },
+          "tokenAddresses": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiscoverItem"
+            }
+          }
+        },
+        "required": [
+          "timeframe",
+          "totalRows",
+          "tokenAddresses",
+          "items"
+        ]
+      },
+      "OkxDiscoverResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cachedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cacheAgeMs": {
+            "type": "number",
+            "description": "Cache age in ms"
+          },
+          "request": {
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "source": {
+                "type": "string",
+                "example": "okx"
+              },
+              "timeframes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "5m",
+                    "1h",
+                    "4h",
+                    "24h"
+                  ]
+                }
+              },
+              "itemLimit": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Preview item limit"
+              }
+            },
+            "required": [
+              "chain",
+              "source",
+              "timeframes",
+              "itemLimit"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "source": {
+                "type": "string",
+                "example": "okx"
+              },
+              "timeframes": {
+                "type": "object",
+                "properties": {
+                  "5m": {
+                    "$ref": "#/components/schemas/OkxDiscoverSnapshot"
+                  },
+                  "1h": {
+                    "$ref": "#/components/schemas/OkxDiscoverSnapshot"
+                  },
+                  "4h": {
+                    "$ref": "#/components/schemas/OkxDiscoverSnapshot"
+                  },
+                  "24h": {
+                    "$ref": "#/components/schemas/OkxDiscoverSnapshot"
+                  }
+                },
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/OkxDiscoverSnapshot"
+                }
+              }
+            },
+            "required": [
+              "chain",
+              "source",
+              "timeframes"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "fetchedAt",
+          "cachedAt",
+          "cacheAgeMs",
+          "request",
+          "data"
+        ]
+      },
+      "PadreDiscoverResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "source": {
+                "type": "string",
+                "example": "padre"
+              },
+              "tab": {
+                "type": "string",
+                "enum": [
+                  "trending",
+                  "dex",
+                  "new",
+                  "users"
+                ]
+              },
+              "timeframe": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "30m",
+                  "1h"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Requested limit"
+              }
+            },
+            "required": [
+              "chain",
+              "source",
+              "tab",
+              "timeframe",
+              "limit"
+            ]
+          },
+          "status": {
+            "$ref": "#/components/schemas/DiscoverStatus"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "source": {
+                "type": "string",
+                "example": "padre"
+              },
+              "tab": {
+                "type": "string",
+                "enum": [
+                  "trending",
+                  "dex",
+                  "new",
+                  "users"
+                ]
+              },
+              "timeframe": {
+                "type": "string",
+                "enum": [
+                  "1m",
+                  "5m",
+                  "30m",
+                  "1h"
+                ]
+              },
+              "totalRows": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Rows in the matched snapshot"
+              },
+              "tokenAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DiscoverItem"
+                }
+              },
+              "matchedSnapshot": {
+                "type": "object",
+                "properties": {
+                  "requestId": {
+                    "type": "integer",
+                    "format": "int64",
+                    "description": "Matched websocket request id",
+                    "nullable": true
+                  },
+                  "score": {
+                    "type": "number",
+                    "description": "Match score"
+                  },
+                  "visibleSequence": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "requestId",
+                  "score",
+                  "visibleSequence"
+                ]
+              }
+            },
+            "required": [
+              "chain",
+              "source",
+              "tab",
+              "timeframe",
+              "totalRows",
+              "tokenAddresses",
+              "items",
+              "matchedSnapshot"
+            ]
+          },
+          "error": {
+            "type": "string",
+            "description": "Crawler error",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "status",
+          "data"
+        ]
+      },
+      "DiscoverResponse": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "request": {
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "tab": {
+                "type": "string",
+                "enum": [
+                  "trending",
+                  "dex",
+                  "new",
+                  "users"
+                ]
+              },
+              "timeframe": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "okx",
+                  "padre"
+                ]
+              },
+              "limit": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Requested limit"
+              }
+            },
+            "required": [
+              "chain",
+              "tab",
+              "timeframe",
+              "source",
+              "limit"
+            ]
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "chain": {
+                "type": "string",
+                "example": "sol"
+              },
+              "tab": {
+                "type": "string",
+                "enum": [
+                  "trending",
+                  "dex",
+                  "new",
+                  "users"
+                ]
+              },
+              "timeframe": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "okx",
+                  "padre"
+                ]
+              },
+              "totalRows": {
+                "type": "integer",
+                "format": "int64",
+                "description": "Rows in the active list"
+              },
+              "tokenAddresses": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/DiscoverItem"
+                }
+              },
+              "availableTimeframes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "chain",
+              "tab",
+              "timeframe",
+              "source",
+              "totalRows",
+              "tokenAddresses",
+              "items",
+              "availableTimeframes"
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DiscoverStatus"
+              }
+            ],
+            "nullable": true
+          },
+          "error": {
+            "type": "string",
+            "description": "Error",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ok",
+          "fetchedAt",
+          "request",
+          "data"
+        ]
+      }
+    }
+  }
+}

@@ -10,12 +10,14 @@ description: Current local services exposed by the crawler terminal workspace.
 - URL: `http://localhost:3001`
 - Routes:
   - `/`
+  - `/pump`
   - `/sol/token/{mint}`
   - `/sol/address/{wallet}`
 
 The shell is intentionally minimal:
 
 - `Discover`
+- `Pump`
 - `Token`
 - `Wallet`
 - one search bar
@@ -44,6 +46,7 @@ The wallet surface is split into:
 
 Other local API surfaces documented in this Mintlify site:
 
+- Pump discover + Pump realtime dashboard API
 - OKX trending snapshot API
 - Padre trending snapshot API
 - Padre streaming SSE API
