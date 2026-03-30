@@ -1,68 +1,69 @@
-"""Mathematical utility functions."""
-from typing import Sequence, Union
-import statistics
+"""Mathematical utility functions for the trading bot."""
+from typing import Sequence, Optional
+import numpy as np
 
 
 def compute_percentile(series: Sequence[float], value: float) -> float:
-    """Return the percentile rank of *value* within *series* in [0, 1].
-
-    E.g. if value is lower than 10 % of the series this returns 0.10.
     """
-    if not series:
+    Compute the percentile rank of `value` within `series`.
+    Returns a float in [0, 1].
+    """
+    arr = np.asarray(series, dtype=float)
+    if arr.size == 0:
         return 0.5
-    n = len(series)
-    rank = sum(1 for x in series if x <= value)
-    return rank / n
+    return float(np.mean(arr <= value))
 
 
 def compute_zscore(series: Sequence[float], value: float) -> float:
-    """Return z-score of *value* relative to *series*."""
-    if len(series) < 2:
+    """
+    Compute the z-score of `value` relative to `series`.
+    Returns 0.0 if standard deviation is zero.
+    """
+    arr = np.asarray(series, dtype=float)
+    if arr.size < 2:
         return 0.0
-    try:
-        mean = statistics.mean(series)
-        std = statistics.stdev(series)
-    except statistics.StatisticsError:
+    mu = float(np.mean(arr))
+    sigma = float(np.std(arr, ddof=1))
+    if sigma == 0.0:
         return 0.0
-    if std == 0.0:
-        return 0.0
-    return (value - mean) / std
+    return (value - mu) / sigma
 
 
-def compute_atr(ohlc_series: Sequence[dict], period: int = 14) -> float:
-    """Compute Average True Range over *period* candles.
-
-    Each element of *ohlc_series* must be a dict with keys 'high', 'low', 'close'.
+def compute_atr(ohlc_series: Sequence[tuple], period: int = 14) -> float:
+    """
+    Compute Average True Range over the last `period` candles.
+    Each element of ohlc_series should be (open, high, low, close).
     Returns ATR in price units.
     """
-    if len(ohlc_series) < 2:
+    arr = np.asarray(ohlc_series, dtype=float)
+    if arr.shape[0] < 2 or arr.shape[1] < 4:
         return 0.0
-    trs = []
-    candles = list(ohlc_series)
-    for i in range(1, len(candles)):
-        h = candles[i]["high"]
-        l = candles[i]["low"]
-        prev_c = candles[i - 1]["close"]
-        tr = max(h - l, abs(h - prev_c), abs(l - prev_c))
-        trs.append(tr)
-    if not trs:
+    highs = arr[:, 1]
+    lows = arr[:, 2]
+    closes = arr[:, 3]
+    prev_closes = closes[:-1]
+    tr_hl = highs[1:] - lows[1:]
+    tr_hpc = np.abs(highs[1:] - prev_closes)
+    tr_lpc = np.abs(lows[1:] - prev_closes)
+    tr = np.maximum(tr_hl, np.maximum(tr_hpc, tr_lpc))
+    if tr.size == 0:
         return 0.0
-    trs = trs[-period:]
-    return sum(trs) / len(trs)
+    window = min(period, tr.size)
+    return float(np.mean(tr[-window:]))
 
 
 def bps_to_pct(bps: float) -> float:
-    """Convert basis points to a decimal fraction (e.g. 10 bps -> 0.001)."""
-    return bps / 10_000.0
+    """Convert basis points to percentage (e.g. 10 bps -> 0.10%)."""
+    return bps / 100.0
 
 
 def pct_to_bps(pct: float) -> float:
-    """Convert decimal fraction to basis points (e.g. 0.001 -> 10 bps)."""
-    return pct * 10_000.0
+    """Convert percentage to basis points (e.g. 0.10% -> 10 bps)."""
+    return pct * 100.0
 
 
 def safe_div(a: float, b: float, default: float = 0.0) -> float:
-    """Divide *a* by *b*, returning *default* if *b* is zero."""
+    """Safe division returning `default` when denominator is zero."""
     if b == 0.0:
         return default
     return a / b

@@ -1,1 +1,1 @@
-# Storage package
+"""Storage backends"""

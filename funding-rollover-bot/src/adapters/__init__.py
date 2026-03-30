@@ -1,1 +1,1 @@
-# Adapters package
+"""Exchange and data adapters"""

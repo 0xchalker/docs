@@ -1,1 +1,1 @@
-# Funding Rollover Super Scalp Bot
+"""Funding Rollover Super Scalp Bot"""
