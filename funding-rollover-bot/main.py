@@ -34,6 +34,12 @@ def main():
     bt_parser.add_argument("--end", required=True, help="End date YYYY-MM-DD")
     bt_parser.add_argument("--log-level", default="INFO")
 
+    # UI dashboard
+    ui_parser = subparsers.add_parser("ui", help="Run web dashboard UI server")
+    ui_parser.add_argument("--host", default="0.0.0.0", help="Bind host (default: 0.0.0.0)")
+    ui_parser.add_argument("--port", type=int, default=8080, help="Bind port (default: 8080)")
+    ui_parser.add_argument("--log-level", default="INFO")
+
     args = parser.parse_args()
 
     if args.command == "live":
@@ -51,6 +57,14 @@ def main():
         result = bt.run(symbols=args.symbols, start_date=args.start, end_date=args.end)
         from backtest.metrics import BacktestMetrics
         BacktestMetrics.print_report(result)
+
+    elif args.command == "ui":
+        setup_logging(args.log_level)
+        logger = get_logger("main")
+        logger.info("Starting dashboard UI server", host=args.host, port=args.port)
+        # Import here to keep UI deps optional for bot-only installs
+        from ui.server import run_server
+        run_server(host=args.host, port=args.port)
 
     else:
         parser.print_help()
