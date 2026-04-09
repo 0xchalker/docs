@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en" x-data="botDashboard()" x-init="init()">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Funding Scalp Bot Dashboard</title>
+
+  <!-- CDN Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Local assets -->
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="/static/app.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar">
+  <!-- Left: Title -->
+  <div class="navbar-title">
+    &#9889; Funding <span>Scalp Bot</span>
+  </div>
+
+  <!-- Center: Status -->
+  <div class="flex items-center gap-2">
+    <span :class="statusPillClass()" x-text="statusPillText()"></span>
+    <span class="text-muted" style="font-size:11px" x-show="status.dry_run && status.bot_running">
+      (simulated)
+    </span>
+  </div>
+
+  <!-- Right: Countdown + controls -->
+  <div class="navbar-right">
+    <div class="countdown-display" x-show="nearestCountdown() !== null">
+      Next funding
+      (<span x-text="nearestCountdownSymbol()"></span>):
+      <span class="count-value" x-text="fmt.countdown(nearestCountdown())"></span>
+    </div>
+
+    <!-- WS indicator -->
+    <div class="ws-indicator">
+      <div class="ws-dot" :class="connected ? 'connected' : 'disconnected'"></div>
+      <span x-text="connected ? 'Live' : 'Offline'"></span>
+    </div>
+
+    <!-- Bot control button -->
+    <button
+      :class="status.bot_running ? 'btn btn-danger btn-sm' : 'btn btn-success btn-sm'"
+      @click="toggleBot()"
+      x-text="status.bot_running ? '■ Stop' : '▶ Start'"
+    ></button>
+
+    <!-- Dry run toggle -->
+    <button class="btn btn-secondary btn-sm" @click="toggleDryRun()">
+      <span x-text="status.dry_run ? '🔬 Dry Run' : '💰 Live'"></span>
+    </button>
+
+    <!-- Refresh -->
+    <button class="btn btn-secondary btn-sm" @click="fetchAll()">⟳ Refresh</button>
+  </div>
+</nav>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<div class="main-container">
+
+  <!-- ============================================================
+       ROW 1 — Stats Bar
+       ============================================================ -->
+  <div class="stats-bar">
+
+    <!-- Today PnL -->
+    <div class="stat-card">
+      <div class="stat-label">Today's PnL</div>
+      <div class="stat-value" :class="todayPnlClass()">
+        <span x-text="fmt.usd(metrics.today?.pnl_usd ?? 0)"></span>
+      </div>
+      <div class="stat-subtext" x-text="(metrics.today?.wins ?? 0) + ' wins / ' + (metrics.today?.losses ?? 0) + ' losses'"></div>
+    </div>
+
+    <!-- Total Trades Today -->
+    <div class="stat-card">
+      <div class="stat-label">Trades Today</div>
+      <div class="stat-value text-blue" x-text="metrics.today?.trades ?? 0"></div>
+      <div class="stat-subtext" x-text="'All-time: ' + (metrics.overall?.total_trades ?? 0)"></div>
+    </div>
+
+    <!-- Win Rate -->
+    <div class="stat-card">
+      <div class="stat-label">Win Rate</div>
+      <div class="stat-value"
+        :class="(metrics.overall?.win_rate ?? 0) >= 0.5 ? 'text-green' : 'text-red'"
+        x-text="winRateDisplay()">
+      </div>
+      <div class="stat-subtext" x-text="'P.Factor: ' + (metrics.overall?.profit_factor ?? 0).toFixed(2) + 'x'"></div>
+    </div>
+
+    <!-- Active Symbols -->
+    <div class="stat-card">
+      <div class="stat-label">Active Symbols</div>
+      <div class="stat-value text-blue" x-text="(status.symbols || []).length"></div>
+      <div class="stat-subtext" x-text="(status.symbols || []).join(' · ') || '—'"></div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================
+       ROW 2 — Scanner | Signals | State Machine
+       ============================================================ -->
+  <div class="three-col">
+
+    <!-- ---- Scanner ---- -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#x1F50D; Scanner Candidates</span>
+        <div class="flex items-center gap-2">
+          <span class="text-muted" style="font-size:10px"
+            x-text="scanner.scanned_at ? 'at ' + fmt.timeOnly(scanner.scanned_at) : ''"></span>
+          <button class="btn btn-secondary btn-sm" @click="fetchScanner()">⟳</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <!-- Empty -->
+        <div class="empty-state" x-show="!scanner.candidates || scanner.candidates.length === 0">
+          <div class="empty-state-icon">&#x1F4CA;</div>
+          <div class="empty-state-text">No scan candidates yet</div>
+        </div>
+
+        <!-- Table -->
+        <table class="data-table" x-show="scanner.candidates && scanner.candidates.length > 0">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Funding%</th>
+              <th>OI $</th>
+              <th>Spread</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="c in scanner.candidates" :key="c.symbol">
+              <tr>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge" :class="symbolGroupBadge(c.symbol)" x-text="symbolGroup(c.symbol)"></span>
+                    <span x-text="c.symbol"></span>
+                  </div>
+                </td>
+                <td>
+                  <span :class="fundingPctClass(c.funding_pct)"
+                    x-text="fmt.pct(c.funding_pct)"></span>
+                </td>
+                <td x-text="fmt.oi(c.oi_usd)"></td>
+                <td x-text="fmt.bps(c.spread_bps)"></td>
+                <td>
+                  <span class="badge badge-score"
+                    :class="scoreColorClass(c.coin_selection_score)"
+                    x-text="c.coin_selection_score"></span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ---- Signal Engine ---- -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#9889; Signal Scores</span>
+        <button class="btn btn-secondary btn-sm" @click="fetchSignals()">⟳</button>
+      </div>
+
+      <div class="card-body card-scroll">
+        <!-- Empty -->
+        <div class="empty-state" x-show="signalEntries().length === 0">
+          <div class="empty-state-icon">&#x1F4F6;</div>
+          <div class="empty-state-text">No signals yet</div>
+        </div>
+
+        <template x-for="[sym, sig] in signalEntries()" :key="sym">
+          <div class="signal-symbol-card fade-in">
+            <!-- Header -->
+            <div class="signal-symbol-header">
+              <div class="flex items-center gap-2">
+                <span class="signal-symbol-name" x-text="sym"></span>
+                <span class="badge" :class="symbolGroupBadge(sym)" x-text="symbolGroup(sym)"></span>
+              </div>
+              <span class="badge" :class="decisionBadgeClass(sig.decision)"
+                x-text="decisionLabel(sig.decision)"></span>
+            </div>
+
+            <!-- Long Score Bar -->
+            <div class="score-bar-container" style="margin-bottom:6px">
+              <span style="font-size:10px;color:var(--text-dim);min-width:36px">LONG</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill long" :style="'width:' + longScoreBarWidth(sym)"></div>
+              </div>
+              <span class="score-label" x-text="fmt.score(sig.long_score) + '/9'"></span>
+            </div>
+
+            <!-- Short Score Bar -->
+            <div class="score-bar-container" style="margin-bottom:8px">
+              <span style="font-size:10px;color:var(--text-dim);min-width:36px">SHORT</span>
+              <div class="score-bar-track">
+                <div class="score-bar-fill short" :style="'width:' + shortScoreBarWidth(sym)"></div>
+              </div>
+              <span class="score-label" x-text="fmt.score(sig.short_score) + '/8'"></span>
+            </div>
+
+            <!-- Feature grid -->
+            <div class="features-grid" x-show="sig.features">
+              <div class="feature-row">
+                <span class="feature-label">Funding</span>
+                <span class="feature-value" :class="fundingPctClass(sig.features?.funding_now)"
+                  x-text="fmt.pct(sig.features?.funding_now)"></span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-label">OI Δ15m</span>
+                <span class="feature-value"
+                  :class="(sig.features?.oi_delta_15m || 0) > 0 ? 'text-green' : 'text-red'"
+                  x-text="fmt.pct(sig.features?.oi_delta_15m * 100, 3)"></span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-label">ZScore</span>
+                <span class="feature-value"
+                  :class="(sig.features?.funding_zscore_24h || 0) < -1.5 ? 'text-green' : 'text-muted'"
+                  x-text="(sig.features?.funding_zscore_24h || 0).toFixed(2)"></span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-label">Price Δ5m</span>
+                <span class="feature-value"
+                  :class="(sig.features?.price_delta_5m || 0) > 0 ? 'text-green' : 'text-red'"
+                  x-text="fmt.pct(sig.features?.price_delta_5m * 100, 3)"></span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-label">Taker R</span>
+                <span class="feature-value"
+                  :class="(sig.features?.taker_buy_sell_ratio_5m || 1) > 1 ? 'text-green' : 'text-red'"
+                  x-text="fmt.ratio(sig.features?.taker_buy_sell_ratio_5m)"></span>
+              </div>
+              <div class="feature-row">
+                <span class="feature-label">Spread</span>
+                <span class="feature-value" x-text="fmt.bps(sig.features?.spread_bps)"></span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <!-- ---- State Machine ---- -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#x1F916; Bot State</span>
+        <span class="text-muted" style="font-size:10px" x-text="lastUpdateDisplay()"></span>
+      </div>
+
+      <div class="card-body card-scroll">
+        <!-- Empty -->
+        <div class="empty-state" x-show="activeSymbols().length === 0">
+          <div class="empty-state-icon">&#x23F3;</div>
+          <div class="empty-state-text">No symbols configured</div>
+        </div>
+
+        <template x-for="sym in activeSymbols()" :key="sym">
+          <div style="margin-bottom:16px">
+            <div class="flex items-center gap-2" style="margin-bottom:8px">
+              <span style="font-size:13px;font-weight:700;color:var(--text-primary)" x-text="sym"></span>
+              <span class="badge" :class="stateColorClass(currentState(sym))"
+                x-text="currentState(sym)"></span>
+            </div>
+            <div class="state-list">
+              <template x-for="state in ['FLAT','WARMUP','PRE_FUNDING_SCAN','ARMED','DECISION_LOCKED','ENTERING','IN_POSITION','EXITING','COOLDOWN']" :key="state">
+                <div :class="stateItemClass(sym, state)">
+                  <div class="state-dot"></div>
+                  <span class="state-name" x-text="stateDisplayName(state)"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+  </div><!-- /three-col -->
+
+  <!-- ============================================================
+       ROW 3 — Open Positions | Funding Countdown
+       ============================================================ -->
+  <div class="two-col">
+
+    <!-- ---- Open Positions ---- -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#x1F4BC; Open Positions</span>
+        <button class="btn btn-secondary btn-sm" @click="fetchPositions()">⟳</button>
+      </div>
+
+      <div class="overflow-x-auto">
+        <!-- Empty -->
+        <div class="empty-state" x-show="!positions.positions || positions.positions.length === 0">
+          <div class="empty-state-icon">&#x1F4C4;</div>
+          <div class="empty-state-text">No open positions</div>
+        </div>
+
+        <!-- Table -->
+        <table class="data-table" x-show="positions.positions && positions.positions.length > 0">
+          <thead>
+            <tr>
+              <th>Symbol</th>
+              <th>Side</th>
+              <th>Size</th>
+              <th>Entry</th>
+              <th>Mark</th>
+              <th>PnL $</th>
+              <th>PnL %</th>
+              <th>Hold</th>
+              <th>Mode</th>
+              <th>TP1</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="pos in positions.positions" :key="pos.symbol">
+              <tr>
+                <td>
+                  <div class="flex items-center gap-2">
+                    <span class="badge" :class="symbolGroupBadge(pos.symbol)" x-text="symbolGroup(pos.symbol)"></span>
+                    <span x-text="pos.symbol"></span>
+                  </div>
+                </td>
+                <td>
+                  <span :class="sideClass(pos.side)" x-text="sideLabel(pos.side)"></span>
+                </td>
+                <td x-text="pos.size"></td>
+                <td x-text="fmt.price(pos.entry_price)"></td>
+                <td x-text="fmt.price(pos.mark_price)"></td>
+                <td>
+                  <span :class="pnlClass(pos.pnl_usd)" x-text="fmt.usd(pos.pnl_usd)"></span>
+                </td>
+                <td>
+                  <span :class="pnlClass(pos.pnl_pct)"
+                    x-text="fmt.pct(pos.pnl_pct)"></span>
+                </td>
+                <td x-text="fmt.holdTime(pos.hold_seconds)"></td>
+                <td>
+                  <span class="badge" :class="pos.mode === 'LONG_AT_ROLLOVER' ? 'badge-green' : 'badge-red'"
+                    x-text="pos.mode === 'LONG_AT_ROLLOVER' ? 'LONG' : 'SHORT'"></span>
+                </td>
+                <td>
+                  <span class="badge" :class="pos.tp1_done ? 'badge-green' : 'badge-gray'"
+                    x-text="pos.tp1_done ? '✓' : '—'"></span>
+                </td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ---- Funding Countdown ---- -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">&#x23F0; Funding Countdown</span>
+        <span class="text-muted" style="font-size:10px">8h intervals</span>
+      </div>
+
+      <div class="card-body">
+        <!-- Empty -->
+        <div class="empty-state" x-show="activeSymbols().length === 0">
+          <div class="empty-state-icon">&#x23F3;</div>
+          <div class="empty-state-text">No symbols</div>
+        </div>
+
+        <div class="funding-grid">
+          <template x-for="sym in activeSymbols()" :key="sym">
+            <div class="funding-card">
+              <!-- Ring -->
+              <div class="countdown-ring">
+                <svg width="72" height="72" viewBox="0 0 72 72">
+                  <circle class="ring-bg" cx="36" cy="36" :r="ringCircumference / (2 * Math.PI)"></circle>
+                  <circle
+                    class="ring-fill"
+                    :class="ringClass(sym)"
+                    cx="36" cy="36"
+                    :r="ringCircumference / (2 * Math.PI)"
+                    :stroke-dasharray="ringCircumference"
+                    :stroke-dashoffset="ringDashOffset(sym)"
+                  ></circle>
+                </svg>
+                <div class="countdown-ring-text" x-text="fmt.countdown(countdown[sym] ?? 0)"></div>
+              </div>
+
+              <span class="countdown-symbol" x-text="sym"></span>
+
+              <!-- Current funding rate (from scanner if available) -->
+              <template x-for="c in (scanner.candidates.filter(c => c.symbol === sym))" :key="c.symbol">
+                <span class="funding-rate-display"
+                  :class="fundingPctClass(c.funding_pct)"
+                  x-text="fmt.pct(c.funding_pct)"></span>
+              </template>
+
+              <span class="state-badge" x-text="currentState(sym)"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /two-col -->
+
+  <!-- ============================================================
+       ROW 4 — PnL Chart
+       ============================================================ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">&#x1F4C8; PnL Chart</span>
+      <div class="chart-toggle">
+        <button :class="chartMode === 'cumulative' ? 'active' : ''"
+          @click="setChartMode('cumulative')">Cumulative</button>
+        <button :class="chartMode === 'daily' ? 'active' : ''"
+          @click="setChartMode('daily')">Daily</button>
+        <button :class="chartMode === 'pertrade' ? 'active' : ''"
+          @click="setChartMode('pertrade')">Per-Trade</button>
+      </div>
+    </div>
+
+    <div class="card-body">
+      <!-- Empty -->
+      <div class="empty-state" style="height:200px"
+        x-show="!metrics.pnl_series || metrics.pnl_series.length === 0">
+        <div class="empty-state-icon">&#x1F4C9;</div>
+        <div class="empty-state-text">No trade history yet</div>
+      </div>
+
+      <div class="chart-container" x-show="metrics.pnl_series && metrics.pnl_series.length > 0 || chartMode === 'pertrade'">
+        <canvas id="pnlChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ROW 5 — Trade Journal
+       ============================================================ -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">&#x1F4D3; Trade Journal</span>
+      <div class="flex items-center gap-2">
+        <span class="text-muted" style="font-size:11px"
+          x-text="'Total: ' + (trades.total || 0) + ' trades'"></span>
+        <button class="btn btn-secondary btn-sm" @click="exportCsv()">&#x2B73; CSV</button>
+      </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <input class="filter-input" type="text" placeholder="Symbol (e.g. BTCUSDT)"
+        x-model="tradeFilter.symbol" @change="applyFilter()" style="width:160px" />
+
+      <select class="filter-input" x-model="tradeFilter.mode" @change="applyFilter()">
+        <option value="">All Modes</option>
+        <option value="LONG_AT_ROLLOVER">Long at Rollover</option>
+        <option value="SHORT_AT_ROLLOVER">Short at Rollover</option>
+      </select>
+
+      <button class="btn btn-secondary btn-sm" @click="applyFilter()">Apply</button>
+      <button class="btn btn-secondary btn-sm" @click="tradeFilter = {symbol:'',mode:''}; applyFilter()">Clear</button>
+    </div>
+
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <!-- Empty -->
+      <div class="empty-state" x-show="!trades.trades || trades.trades.length === 0">
+        <div class="empty-state-icon">&#x1F4C4;</div>
+        <div class="empty-state-text">No trades found</div>
+      </div>
+
+      <table class="data-table" x-show="trades.trades && trades.trades.length > 0">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Symbol</th>
+            <th>Mode</th>
+            <th>Decision</th>
+            <th>Score L/S</th>
+            <th>Entry</th>
+            <th>Exit</th>
+            <th>PnL $</th>
+            <th>R</th>
+            <th>Hold</th>
+            <th>Exit Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <template x-for="trade in trades.trades" :key="trade.trade_id">
+            <tr :class="tradeRowClass(trade)">
+              <td x-text="fmt.datetime(trade.entry_time)"></td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <span class="badge" :class="symbolGroupBadge(trade.symbol)"
+                    x-text="symbolGroup(trade.symbol)"></span>
+                  <span x-text="trade.symbol"></span>
+                </div>
+              </td>
+              <td>
+                <span class="badge"
+                  :class="trade.mode === 'LONG_AT_ROLLOVER' ? 'badge-green' : 'badge-red'"
+                  x-text="trade.mode === 'LONG_AT_ROLLOVER' ? 'LONG' : 'SHORT'"></span>
+              </td>
+              <td>
+                <span class="badge" :class="decisionBadgeClass(trade.decision)"
+                  x-text="decisionLabel(trade.decision)"></span>
+              </td>
+              <td>
+                <span class="text-green" x-text="trade.long_score || 0"></span>
+                <span class="text-muted"> / </span>
+                <span class="text-red" x-text="trade.short_score || 0"></span>
+              </td>
+              <td x-text="fmt.price(trade.entry_price)"></td>
+              <td x-text="fmt.price(trade.exit_price)"></td>
+              <td>
+                <span :class="pnlClass(trade.pnl_usd)" x-text="fmt.usd(trade.pnl_usd)"></span>
+              </td>
+              <td>
+                <span :class="pnlClass(trade.pnl_r)"
+                  x-text="(parseFloat(trade.pnl_r) || 0).toFixed(2) + 'R'"></span>
+              </td>
+              <td x-text="fmt.holdTime(
+                trade.entry_time && trade.exit_time
+                  ? (new Date(trade.exit_time) - new Date(trade.entry_time)) / 1000
+                  : null
+              )"></td>
+              <td>
+                <span class="badge"
+                  :class="trade.exit_reason === 'TP1' || trade.exit_reason === 'TP2' ? 'badge-green' : trade.exit_reason === 'SL' ? 'badge-red' : 'badge-gray'"
+                  x-text="trade.exit_reason || '—'"></span>
+              </td>
+            </tr>
+          </template>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" x-show="trades.total > 0">
+      <span class="pagination-info"
+        x-text="'Showing ' + tradeRangeStart() + '–' + tradeRangeEnd() + ' of ' + trades.total"></span>
+      <button class="btn btn-secondary btn-sm" @click="prevPage()" :disabled="tradePage === 0">&#8592; Prev</button>
+      <span class="text-muted" style="font-size:11px" x-text="'Page ' + (tradePage + 1) + ' / ' + totalPages()"></span>
+      <button class="btn btn-secondary btn-sm" @click="nextPage()" :disabled="tradePage >= totalPages() - 1">Next &#8594;</button>
+    </div>
+
+  </div><!-- /trade journal -->
+
+  <!-- ============================================================
+       Footer
+       ============================================================ -->
+  <div style="text-align:center;padding:12px;color:var(--text-dim);font-size:11px">
+    Funding Scalp Bot Dashboard &bull; Last updated: <span x-text="lastUpdateDisplay()"></span>
+    &bull; Uptime: <span x-text="fmt.holdTime(status.uptime_seconds)"></span>
+  </div>
+
+</div><!-- /main-container -->
+
+</body>
+</html>

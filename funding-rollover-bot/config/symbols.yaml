@@ -1,0 +1,16 @@
+symbols:
+  BTCUSDT:
+    group: BTC
+    exchanges: ["binance", "bybit", "okx"]
+    coinglass_symbol: "BTC"
+    min_order_size: 0.001
+    tick_size: 0.1
+    contract_size: 1.0
+
+  ETHUSDT:
+    group: ETH
+    exchanges: ["binance", "bybit", "okx"]
+    coinglass_symbol: "ETH"
+    min_order_size: 0.01
+    tick_size: 0.01
+    contract_size: 1.0

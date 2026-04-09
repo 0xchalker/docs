@@ -1,0 +1,102 @@
+strategy:
+  enabled: true
+  whitelist_symbols: ["BTCUSDT", "ETHUSDT"]
+  dry_run: true
+
+scanner:
+  enabled: true
+  top_n_scan_candidates: 3
+  max_parallel_armed_symbols: 1
+  scan_funding_pct_min: -1.5
+  scan_funding_pct_max: 0.0
+  extreme_funding_pct_cap: -1.5
+  oi_delta_scan_threshold: 0.01
+  price_dislocation_scan_cap: 0.01
+  max_spread_bps_scan:
+    BTC: 2.5
+    ETH: 3.5
+    ALT: 6.0
+  max_slippage_bps_scan:
+    BTC: 4
+    ETH: 6
+    ALT: 10
+  min_oi_usd:
+    BTC: 100000000
+    ETH: 50000000
+    ALT: 15000000
+  min_liq_signal_usd:
+    BTC: 1000000
+    ETH: 500000
+    ALT: 100000
+
+risk:
+  risk_per_trade: 0.0025
+  max_consecutive_losses: 2
+  daily_max_loss_pct: 0.015
+  decision_lock_seconds: 3
+  entry_window_seconds: 1
+  stop_distance_pct:
+    BTC: 0.0012
+    ETH: 0.0015
+    ALT: 0.0020
+  tp1_pct:
+    BTC: 0.0016
+    ETH: 0.0020
+    ALT: 0.0024
+  tp2_pct:
+    BTC: 0.0028
+    ETH: 0.0035
+    ALT: 0.0040
+  max_hold_seconds:
+    LONG_AT_ROLLOVER: 45
+    SHORT_AT_ROLLOVER: 30
+  low_long_liq_threshold_usd: 100000
+
+thresholds:
+  long_threshold: 6
+  short_threshold: 6
+  long_conflict_cap: 4
+  short_conflict_cap: 4
+  funding_zscore_long: -1.8
+  funding_percentile_long: 0.10
+  oi_delta_15m_long: 0.015
+  oi_delta_5m_short: 0.008
+  price_delta_5m_short: 0.0015
+  taker_ratio_short_cap_1m: 0.98
+
+filters:
+  max_spread_bps:
+    BTC: 2.5
+    ETH: 3.5
+    ALT: 6.0
+  max_atr_1m_bps:
+    BTC: 18
+    ETH: 24
+    ALT: 35
+
+execution:
+  max_entry_slippage_bps:
+    BTC: 4
+    ETH: 6
+    ALT: 10
+  order_type: IOC_MARKETABLE_LIMIT
+
+data:
+  use_coinglass_rest: true
+  use_coinglass_ws: true
+  use_exchange_ws: true
+  stale_feature_max_age_sec:
+    funding: 30
+    oi: 20
+    liquidation: 15
+    taker: 15
+
+coinglass:
+  api_key: ""
+  base_url: "https://open-api-v3.coinglass.com"
+
+venue:
+  name: "binance"
+  api_key: ""
+  api_secret: ""
+  testnet: true
